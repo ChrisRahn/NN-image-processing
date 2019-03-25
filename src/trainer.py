@@ -35,9 +35,9 @@ kernel_t = tf.constant_initializer(triangle)
 # Define a simple LSTM model
 model = keras.Sequential([
         keras.layers.ConvLSTM2D(
-                 input_shape=( None, 260, 260, 1),
-                 filters=260,
-                 kernel_size=(2,2),
+                 input_shape=(None, 260, 260, 1),
+                 filters=1,
+                 kernel_size=(2, 2),
                  padding='same',
 #                 strides=1,
 #                 dilation_rate=(1, 1),
@@ -46,7 +46,7 @@ model = keras.Sequential([
 ##                 kernel_initializer=kernel_t,
 #                 recurrent_initializer=None,
 #                 kernel_constraint=None,
-                 return_sequences=False,
+                 return_sequences=True,
 #                 return_state=False,
 #                 stateful=False,
                  data_format='channels_last'
