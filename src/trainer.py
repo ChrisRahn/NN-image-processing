@@ -36,27 +36,36 @@ kernel_t = tf.constant_initializer(triangle)
 model = keras.Sequential([
         keras.layers.ConvLSTM2D(
                  input_shape=(None, 260, 260, 1),
-                 filters=1,
-                 kernel_size=(2, 2),
+                 filters=7,
+                 kernel_size=(7, 7),
                  padding='same',
 #                 strides=1,
 #                 dilation_rate=(1, 1),
-#                 activation='relu',
+                 activation='relu',
 #                 recurrent_activation='relu',
-##                 kernel_initializer=kernel_t,
+#                 kernel_initializer=kernel_t,
 #                 recurrent_initializer=None,
 #                 kernel_constraint=None,
                  return_sequences=True,
 #                 return_state=False,
 #                 stateful=False,
-                 data_format='channels_last'
-)
+                 data_format='channels_last'),
+# HINT        keras.layers.BatchNormalization()
         ])
 
 # Compile the model
-model.compile(optimizer='adadelta',
+model.compile(optimizer='adadelta',  # ???Why Adadelta?
               loss='mean_squared_error',
               metrics=['mean_squared_error'])
 
 # Fit the model to the training image
 model.fit(train_X, train_y, epochs=2, verbose=2, batch_size=1)
+
+# Evaluate model
+# TODO model.evaluate(...)
+
+# Predict a random array for testing
+test_X = np.resize(np.random.random(size=img.shape), (1, 1, 260, 260, 1))
+pred_y = model.predict(test_X)
+pred_y_img = pred_y[0, 0, :, :, :]
+imshow(pred_y_img[:, :, 0])
