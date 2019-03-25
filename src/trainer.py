@@ -8,6 +8,7 @@ from matplotlib.pyplot import imread, imshow
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+import keras.backend as K
 
 #img = imread('../data/triforce.jpg')  # Grey-scale only for now
 img = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
@@ -22,8 +23,8 @@ img = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
-# Rescale img's values to be [0 - 1]
-img = img / 255.
+# Rescale img's values to be [0 - 255]
+img = img * 255.
 
 # Set training data to be random and test to be the image
 train_X = np.random.random(size=img.shape)
@@ -55,6 +56,11 @@ triangle_2 = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
 
 kernel_t = tf.constant_initializer(triangle_2)
 
+def my_rescaler(X):
+    max_val = K.max(K.max(X, axis=2, keepdims=True), axis=3)[0, 0, 0, 0]
+    min_val = K.min(K.min(X, axis=2, keepdims=True), axis=3)[0, 0, 0, 0]
+    return 255*(X - min_val)/(max_val - min_val)
+
 # Define a simple LSTM model
 model = keras.Sequential([
         keras.layers.ConvLSTM2D(
@@ -74,14 +80,14 @@ model = keras.Sequential([
 #                 return_state=False,
 #                 stateful=True,
              data_format='channels_last'),
-        keras.layers.Lambda(lambda x: x/255),
+        keras.layers.Lambda(lambda X: my_rescaler(X))
 
 #        keras.layers.BatchNormalization()
 #HINT   keras.layer.Permute(...)  # To apply the different kernels?
         ])
 
 # Compile the model
-model.compile(optimizer='adadelta',  # ???Why Adadelta?
+model.compile(optimizer='adadelta',
               loss='mean_squared_error',
               metrics=['mean_squared_error'])
 
