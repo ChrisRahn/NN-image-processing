@@ -43,14 +43,16 @@ model = keras.Sequential([
 #                 dilation_rate=(1, 1),
                  activation='relu',
 #                 recurrent_activation='relu',
-#                 kernel_initializer=kernel_t,
+                 kernel_initializer=kernel_t,
 #                 recurrent_initializer=None,
 #                 kernel_constraint=None,
                  return_sequences=True,
 #                 return_state=False,
-#                 stateful=False,
+#                 stateful=True,
                  data_format='channels_last'),
-# HINT        keras.layers.BatchNormalization()
+        keras.layers.Lambda(lambda x: x/255)
+#        keras.layers.BatchNormalization()
+#HINT   keras.layer.Permute(...)  # To apply the different kernels?
         ])
 
 # Compile the model
@@ -69,3 +71,4 @@ test_X = np.resize(np.random.random(size=img.shape), (1, 1, 260, 260, 1))
 pred_y = model.predict(test_X)
 pred_y_img = pred_y[0, 0, :, :, :]
 imshow(pred_y_img[:, :, 0])
+print('Mean values are: ', pred_y_img.mean(axis=0).mean(axis=0))
