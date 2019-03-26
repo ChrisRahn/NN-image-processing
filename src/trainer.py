@@ -9,6 +9,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import keras.backend as K
+from tensorflow.keras.constraints import min_max_norm
 from train_gen import simple_tri, simple_test
 
 img = imread('../data/triforce.jpg')  # Grey-scale only for now
@@ -41,6 +42,7 @@ triangle = np.array([[0, 0, 0, 1, 0, 0, 0],
 triangle_2 = simple_tri()
 
 kernel_t = tf.constant_initializer(tiny_tri)
+kernel_const = min_max_norm(0.001, None, rate=1, axis=0)
 
 
 def my_rescaler(X):
@@ -65,18 +67,20 @@ model = keras.Sequential([
             data_format='channels_last',
             activation='relu',
             # use_bias=True,
-            kernel_initializer=kernel_t),
+            kernel_initializer=kernel_t,
+            kernel_constraint=kernel_const),
         # Basic Dense layer
 #        keras.layers.Dense(
-#            units=121,
+#            units=1,
 #            activation='relu',
 #            use_bias=True),
         # Output layer
         keras.layers.Dense(
             units=1,
             activation='relu',
+            kernel_constraint=kernel_const,
             use_bias=True),
-        #keras.layers.Flatten(),
+        keras.layers.PReLU(),
         # Reshape down to the acutal features
 #        keras.layers.Reshape(
 #            target_shape=OUT_SHAPE)
