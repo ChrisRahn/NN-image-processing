@@ -9,10 +9,10 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import keras.backend as K
-from train_gen import simple_tri
+from train_gen import simple_tri, simple_test
 
-#img = imread('../data/triforce.jpg')  # Grey-scale only for now
-img = simple_tri()
+img = imread('../data/triforce.jpg')  # Grey-scale only for now
+#img = simple_tri()
 
 # Rescale img's values to be [0 - 255]
 # img = img * 255.  #TODO Remove prob
@@ -73,7 +73,7 @@ model = keras.Sequential([
 #            use_bias=True),
         # Output layer
         keras.layers.Dense(
-            units=3,
+            units=1,
             activation='relu',
             use_bias=True),
         #keras.layers.Flatten(),
@@ -94,7 +94,8 @@ model.fit(train_X, train_y, epochs=100, verbose=1, batch_size=1)
 # TODO model.evaluate(...)
 
 # Repredict the training img
-test_X = train_X
+test_X = simple_test()
+test_X = np.reshape(test_X, (1, test_X.shape[0], test_X.shape[1], 1))
 y_pred = model.predict(test_X)
 imshow(test_X[0, :, :, 0])
 print('Trained shape data: ', train_y)
