@@ -12,28 +12,32 @@ import keras.backend as K
 
 #img = imread('../data/triforce.jpg')  # Grey-scale only for now
 img = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-                       [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-                       [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-                       [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                       [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-                       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-                       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+                [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
 # Rescale img's values to be [0 - 255]
-img = img * 255.
+# img = img * 255.  #TODO Remove prob
 
 # Set training data to be random and test to be the image
 train_X = np.random.random(size=img.shape)
 train_y = img
 # TensorFlow expects 5D tensors of kind (samples, time, rows, cols, channels)
-train_X = np.resize(train_X, (1, 1, img.shape[0], img.shape[1], 1))
-train_y = np.resize(train_y, (1, 1, img.shape[0], img.shape[1], 1))
+train_X = np.resize(train_X, (1, img.shape[0], img.shape[1], 1))
+train_y = np.resize(train_y, (1, img.shape[0], img.shape[1], 1))
 
 # Define a simple triangular kernel
+tiny_tri = np.array([[0, 1, 0],
+                     [0, 0, 0],
+                     [1, 0, 1]])
+
 triangle = np.array([[0, 0, 0, 1, 0, 0, 0],
                      [0, 0, 1, 1, 1, 0, 0],
                      [0, 0, 1, 1, 1, 0, 0],
@@ -54,36 +58,47 @@ triangle_2 = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
-kernel_t = tf.constant_initializer(triangle_2)
+kernel_t = tf.constant_initializer(tiny_tri)
+
 
 def my_rescaler(X):
     max_val = K.max(K.max(X, axis=2, keepdims=True), axis=3)[0, 0, 0, 0]
     min_val = K.min(K.min(X, axis=2, keepdims=True), axis=3)[0, 0, 0, 0]
     return 255*(X - min_val)/(max_val - min_val)
 
-# Define a simple LSTM model
+#%% #!!! DELET THIS
+## Define a simple LSTM model
+#model = keras.Sequential([
+#        keras.layers.ConvLSTM2D(
+#             input_shape=(None, train_X.shape[2], train_X.shape[3], 1),
+#             filters=11,
+#             kernel_size=(3, 3),
+#             padding='same',
+##                 strides=1,
+##                 dilation_rate=(10, 10),
+#             activation='relu',
+##             recurrent_activation='relu',
+##                 use_bias=True,
+#             kernel_initializer=kernel_t,
+##                 recurrent_initializer=None,
+##                 kernel_constraint=None,
+#             return_sequences=True,
+##                 return_state=False,
+##                 stateful=True,
+#             data_format='channels_last'),
+#        keras.layers.Lambda(lambda X: my_rescaler(X))
+#
+##        keras.layers.BatchNormalization()
+##HINT   keras.layer.Permute(...)  # To apply the different kernels?
+#        ])
+#%%
+    
 model = keras.Sequential([
-        keras.layers.ConvLSTM2D(
-             input_shape=(None, train_X.shape[2], train_X.shape[3], 1),
-             filters=1,
-             kernel_size=(7, 7),
-             padding='same',
-#                 strides=1,
-#                 dilation_rate=(10, 10),
-             activation='relu',
-#                 recurrent_activation='relu',
-#                 use_bias=True,
-             kernel_initializer=kernel_t,
-#                 recurrent_initializer=None,
-#                 kernel_constraint=None,
-             return_sequences=True,
-#                 return_state=False,
-#                 stateful=True,
-             data_format='channels_last'),
-        keras.layers.Lambda(lambda X: my_rescaler(X))
-
-#        keras.layers.BatchNormalization()
-#HINT   keras.layer.Permute(...)  # To apply the different kernels?
+        keras.layers.AveragePooling2D(
+                input_shape=(None, train_X.shape[1], train_X.shape[2], 1),
+                pool_size=(2, 2),
+                padding='same',
+                data_format='channels_last')
         ])
 
 # Compile the model
