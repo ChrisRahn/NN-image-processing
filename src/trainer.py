@@ -20,9 +20,10 @@ img = simple_tri()
 # Set training data to be random and test to be the image
 train_X = simple_tri()
 train_y = np.array([[5, 5, 11]])
-# TensorFlow expects 5D tensors of kind (samples, time, rows, cols, channels)
-train_X = np.resize(train_X, (1, img.shape[0], img.shape[1], 1))
-
+# TensorFlow expects 5D tensors of kind (batch_size, rows, cols, channels)
+train_X = np.resize(train_X, (1, train_X.shape[0], train_X.shape[1], 1))
+IN_SHAPE = train_X.shape
+OUT_SHAPE = train_y.shape
 # Define a simple triangular kernel
 tiny_tri = np.array([[0, 1, 0],
                      [0, 1, 0],
@@ -48,11 +49,13 @@ def my_rescaler(X):
 
 
 model = keras.Sequential([
+        # Maxpool the image
         keras.layers.MaxPool2D(
             input_shape=(train_X.shape[1], train_X.shape[2], 1),
             pool_size=(26, 26),
             padding='same',
             data_format='channels_last'),
+        # Convolve the pooled image by the shape kernel(s)
         keras.layers.Conv2D(
             filters=1,
             kernel_size=(11, 11),
@@ -62,10 +65,14 @@ model = keras.Sequential([
             activation='relu',
             # use_bias=True,
             kernel_initializer=kernel_t),
+        # Basic Dense layer
         keras.layers.Dense(
             units=3,
             activation='relu',
-            use_bias=True)
+            use_bias=True),
+        # Reshape down to the acutal features
+        keras.layers.Reshape(
+            target_shape=train_y.shape)
         ])
 
 # Compile the model
@@ -79,9 +86,9 @@ model.fit(train_X, train_y, epochs=5, verbose=2, batch_size=1)
 # Evaluate model
 # TODO model.evaluate(...)
 
-# Predict a random array for testing
-test_X = np.resize(np.random.random(size=img.shape), (1, 1, img.shape[0], img.shape[1], 1))
-pred_y = model.predict(test_X)
-pred_y_img = pred_y[0, 0, :, :, :]
-imshow(pred_y_img[:, :, 0])
-print('Mean values are: ', pred_y_img.mean(axis=0).mean(axis=0))
+## Predict a random array for testing
+#test_X = np.resize(np.random.random(size=img.shape), (1, 1, img.shape[0], img.shape[1], 1))
+#pred_y = model.predict(test_X)
+#pred_y_img = pred_y[0, 0, :, :, :]
+#imshow(pred_y_img[:, :, 0])
+#print('Mean values are: ', pred_y_img.mean(axis=0).mean(axis=0))
