@@ -67,6 +67,11 @@ model = keras.Sequential([
             kernel_initializer=kernel_t),
         # Basic Dense layer
         keras.layers.Dense(
+            units=121,
+            activation='relu',
+            use_bias=True),
+        # Basic Dense layer
+        keras.layers.Dense(
             units=3,
             activation='relu',
             use_bias=True),
@@ -81,14 +86,14 @@ model.compile(optimizer='adadelta',
               metrics=['mean_squared_error'])
 
 # Fit the model to the training image
-model.fit(train_X, train_y, epochs=5, verbose=2, batch_size=1)
+model.fit(train_X, train_y, epochs=100, verbose=1, batch_size=1)
 
 # Evaluate model
 # TODO model.evaluate(...)
 
-## Predict a random array for testing
-#test_X = np.resize(np.random.random(size=img.shape), (1, 1, img.shape[0], img.shape[1], 1))
-#pred_y = model.predict(test_X)
-#pred_y_img = pred_y[0, 0, :, :, :]
-#imshow(pred_y_img[:, :, 0])
-#print('Mean values are: ', pred_y_img.mean(axis=0).mean(axis=0))
+# Repredict the training img
+test_X = train_X
+y_pred = model.predict(test_X)
+imshow(test_X[0, :, :, 0])
+print('Trained shape data: ', train_y)
+print('Determined shape data: ', y_pred)
