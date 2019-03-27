@@ -91,14 +91,14 @@ class CustomImage():
             # Randomize drawing params
             off_x = WIDTH * np.random.rand()
             off_y = HEIGHT * np.random.rand()
-            w_scale = WIDTH * (np.random.rand() + 0.001)
-            h_scale = HEIGHT * (np.random.rand() + 0.001)
+            w_scale = np.clip(2 * np.random.rand(), 0.1, 4)
+            h_scale = np.clip(2 * np.random.rand(), 0.1, 4)
             rot = 2 * math.pi * np.random.rand()
 
             # Set drawing transformation, then stamp triangle template
-#            ctx.scale(WIDTH, HEIGHT)
-#            ctx.rotate(rot)
             ctx.translate(off_x, off_y)
+            ctx.rotate(rot)
+            ctx.scale(w_scale, h_scale)
             self.triangle()
             ctx.fill()
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
@@ -106,7 +106,7 @@ class CustomImage():
 
 if (__name__ == '__main__'):
     test = CustomImage(512, 512)
-    test.draw_tri(1)
+    test.draw_tri(8)
     print(test.img[:, :, 0])
     test.surface.write_to_png('test.png')
     print(test.triangles)
