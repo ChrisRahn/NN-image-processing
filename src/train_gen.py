@@ -63,21 +63,20 @@ class CustomImage():
             cairo.FORMAT_ARGB32,
             self.WIDTH, self.HEIGHT)
         self.ctx = cairo.Context(self.surface)
-        self.ctx.set_source_rgb(1.0, 0.0, 1.0)
+        self.ctx.set_source_rgb(1.0, 1.0, 1.0)
         self.ctx.paint()
 
     def triangle(self):
         '''Create a basic equilateral triangle
-           Middle-centered w/ side length 0.5*WIDTH'''
+           Middle-centered w/ side length 0.25*WIDTH'''
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
-        ctx.identity_matrix()
-        ctx.move_to(0.50*WIDTH, 0.17*HEIGHT)
+        ctx.move_to(0, -0.144*HEIGHT)
 #        ctx.rel_line_to(0.5*math.cos(-math.pi/3),
 #                        0.5*math.sin(-math.pi/3))
 #        ctx.rel_line_to(-0.5, 0)
-        ctx.line_to(0.75*WIDTH, 0.625*HEIGHT)
-        ctx.line_to(0.25*WIDTH, 0.625*HEIGHT)
+        ctx.line_to(0.125*WIDTH, 0.072*HEIGHT)
+        ctx.line_to(-0.125*WIDTH, 0.072*HEIGHT)
         ctx.close_path()
 
     def draw_tri(self, num_tri):
@@ -85,13 +84,13 @@ class CustomImage():
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
         self.triangles = np.empty((num_tri, 5))
-        ctx.set_source_rgb(0.0, 1.0, 0.0)
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
         for i in range(num_tri):
             ctx.identity_matrix()  # Reset the drawing transformation
 
             # Randomize drawing params
-            off_x = 0.5 - np.random.rand()
-            off_y = 0.5 - np.random.rand()
+            off_x = WIDTH * np.random.rand()
+            off_y = HEIGHT * np.random.rand()
             w_scale = WIDTH * (np.random.rand() + 0.001)
             h_scale = HEIGHT * (np.random.rand() + 0.001)
             rot = 2 * math.pi * np.random.rand()
@@ -99,7 +98,7 @@ class CustomImage():
             # Set drawing transformation, then stamp triangle template
 #            ctx.scale(WIDTH, HEIGHT)
 #            ctx.rotate(rot)
-#            ctx.translate(off_x, off_y)
+            ctx.translate(off_x, off_y)
             self.triangle()
             ctx.fill()
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
