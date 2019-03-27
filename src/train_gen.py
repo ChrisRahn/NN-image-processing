@@ -6,6 +6,7 @@ Generator script for training image-bundles
 import numpy as np
 import math
 import cairo
+import pickle
 
 # Simple arrays for testing
 
@@ -39,10 +40,21 @@ def simple_test():
 
 
 class ImageBundle():
-    def __init__(self):
+    def __init__(self, batch_size, num_tri, width, height):
         # Individual images are array objects
         # Bundle images together as (img_idx, num_shapes, shape_attr)
-        self.images = np.empty_like((5, 3, 5))
+        self.images = np.empty((batch_size, width, height))
+
+        # Bundle the arrays of triangle info as a separate attribute
+        self.tri_list = np.empty((batch_size, num_tri, 5))
+        for i in range(num_tri):
+            new_img = CustomImage(width, height)
+            new_img.draw_tri(num_tri)
+            self.images[i, :, :] = new_img.img[:, :, 0]  # !!!Red channel only for now
+            self.tri_list[i, :, :] = new_img.triangles
+
+    def save(self, filepath):
+        pickle.dump(self, open(filepath, 'wb'))
 
 
 class CustomImage():
@@ -56,7 +68,7 @@ class CustomImage():
         # self.shape_types = ...
 
         # Initialize an array of white RGBA values (4 channel)
-        self.img = 255 * np.zeros((self.WIDTH, self.HEIGHT, 4), dtype=np.uint8)
+        self.img = np.zeros((self.WIDTH, self.HEIGHT, 4), dtype=np.uint8)
         # Initialize a Cairo context and drawing surface
         self.surface = cairo.ImageSurface.create_for_data(
             self.img,
@@ -105,8 +117,10 @@ class CustomImage():
 
 
 if (__name__ == '__main__'):
-    test = CustomImage(512, 512)
-    test.draw_tri(8)
-    print(test.img[:, :, 0])
-    test.surface.write_to_png('test.png')
-    print(test.triangles)
+#    test = CustomImage(512, 512)
+#    test.draw_tri(5)
+#    print(test.img[:, :, 0])
+#    test.surface.write_to_png('test.png')
+#    print(test.triangles)
+    my_bundle = ImageBundle(5, 5, 512, 512)
+    my_bundle.save('../data/train_set_01.pkl')
