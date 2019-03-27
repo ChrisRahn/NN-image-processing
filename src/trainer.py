@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import keras.backend as K
-from tensorflow.keras.constraints import min_max_norm
+from tensorflow.keras.constraints import min_max_norm, non_neg
 from train_gen import simple_tri, simple_test
 
 img = imread('../data/triforce.jpg')  # Grey-scale only for now
@@ -19,8 +19,8 @@ img = imread('../data/triforce.jpg')  # Grey-scale only for now
 # img = img * 255.  #TODO Remove prob
 
 # Set training data to be random and test to be the image
-train_X = simple_tri()
-train_y = np.array([[5, 5, 11]])
+train_X = imread('../data/dummy_train.jpg')
+train_y = np.array([[200, 150, 160]])
 # TensorFlow expects 5D tensors of kind (batch_size, rows, cols, channels)
 IN_SHAPE = train_X.shape
 OUT_SHAPE = train_y.shape
@@ -41,8 +41,9 @@ triangle = np.array([[0, 0, 0, 1, 0, 0, 0],
 
 triangle_2 = simple_tri()
 
-kernel_t = tf.constant_initializer(tiny_tri)
+kernel_t = tf.constant_initializer(triangle_2)
 kernel_const = min_max_norm(0.001, None, rate=1, axis=0)
+kernel_nonneg = non_neg()
 
 
 def my_rescaler(X):
@@ -55,30 +56,32 @@ model = keras.Sequential([
         # Maxpool the image
         keras.layers.MaxPool2D(
             input_shape=(IN_SHAPE[0], IN_SHAPE[1], 1),
-            pool_size=(1, 1),
+            pool_size=2,
             padding='same',
             data_format='channels_last'),
         # Convolve the pooled image by the shape kernel(s)
         keras.layers.Conv2D(
             filters=1,
-            kernel_size=(3, 3),
+            kernel_size=(11, 11),
             strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='relu',
+            activation='sigmoid',
             # use_bias=True,
             kernel_initializer=kernel_t,
-            kernel_constraint=kernel_const),
+            kernel_constraint=kernel_nonneg),
+        keras.layers.Flatten(),
         # Basic Dense layer
-#        keras.layers.Dense(
-#            units=1,
-#            activation='relu',
-#            use_bias=True),
+        keras.layers.Dense(
+            units=81,
+            activation=None,
+            kernel_constraint=kernel_nonneg,
+            use_bias=True),
         # Output layer
         keras.layers.Dense(
-            units=1,
-            activation='relu',
-            kernel_constraint=kernel_const,
+            units=3,
+            activation=None,
+            kernel_constraint=kernel_nonneg,
             use_bias=True),
         keras.layers.PReLU(),
         # Reshape down to the acutal features
@@ -98,9 +101,10 @@ model.fit(train_X, train_y, epochs=100, verbose=1, batch_size=1)
 # TODO model.evaluate(...)
 
 # Repredict the training img
-test_X = simple_test()
+test_X = 255 - imread('../data/triforce.jpg')
 test_X = np.reshape(test_X, (1, test_X.shape[0], test_X.shape[1], 1))
 y_pred = model.predict(test_X)
 imshow(test_X[0, :, :, 0])
 print('Trained shape data: ', train_y)
 print('Determined shape data: ', y_pred)
+y_pred
