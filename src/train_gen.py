@@ -15,12 +15,12 @@ class ImageBundle():
         self.images = np.empty((batch_size, width, height, 1))
 
         # Bundle the arrays of triangle info as a separate attribute
-        self.tri_list = np.empty((batch_size, num_tri, 5))
+        self.tri_list = np.empty((batch_size, num_tri, 5, 1))
         for i in range(num_tri):
             new_img = CustomImage(width, height)
             new_img.draw_tri(num_tri)
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
-            self.tri_list[i, :, :] = new_img.triangles
+            self.tri_list[i, :, :, 0] = new_img.triangles[:, :]
 
     def save(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
