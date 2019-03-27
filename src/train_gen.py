@@ -8,49 +8,18 @@ import math
 import cairo
 import pickle
 
-# Simple arrays for testing
-
-
-def simple_tri():
-    return np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0.5, 1, 0.5, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-                     [0, 0, 0, 0.5, 1, 1, 1, 0.5, 0, 0, 0],
-                     [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-                     [0, 0, 0.5, 1, 1, 1, 1, 1, 0.5, 0, 0],
-                     [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                     [0, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 0],
-                     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-                     [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5],
-                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
-
-
-def simple_test():
-    return np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0.5, 1, 0.5, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-                     [0, 0, 0, 0.5, 1, 1, 1, 0.5, 0, 0, 0],
-                     [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-                     [0, 0, 0.5, 1, 1, 1, 1, 1, 0.5, 0, 0],
-                     [0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
-                     [0, 0.5, 1, 0.5, 0, 0, 0, 0.5, 1, 0.5, 0],
-                     [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
-                     [0.5, 1, 1, 1, 0.5, 0, 0.5, 1, 1, 1, 0.5],
-                     [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]])
-
 
 class ImageBundle():
     def __init__(self, batch_size, num_tri, width, height):
-        # Individual images are array objects
-        # Bundle images together as (img_idx, num_shapes, shape_attr)
-        self.images = np.empty((batch_size, width, height))
+        # Bundle individual images (array)
+        self.images = np.empty((batch_size, width, height, 1))
 
         # Bundle the arrays of triangle info as a separate attribute
         self.tri_list = np.empty((batch_size, num_tri, 5))
         for i in range(num_tri):
             new_img = CustomImage(width, height)
             new_img.draw_tri(num_tri)
-            self.images[i, :, :] = new_img.img[:, :, 0]  # !!!Red channel only for now
+            self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
             self.tri_list[i, :, :] = new_img.triangles
 
     def save(self, filepath):
