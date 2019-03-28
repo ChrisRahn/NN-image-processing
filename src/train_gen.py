@@ -91,5 +91,5 @@ if (__name__ == '__main__'):
 #    print(test.img[:, :, 0])
 #    test.surface.write_to_png('test.png')
 #    print(test.triangles)
-    my_bundle = ImageBundle(5, 5, 512, 512)
+    my_bundle = ImageBundle(25, 5, 512, 512)
     my_bundle.save('../data/train_set_01.pkl')

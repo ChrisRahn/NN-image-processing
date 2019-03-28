@@ -93,7 +93,7 @@ model.compile(optimizer='adadelta',
               metrics=['mean_squared_error'])
 
 # Fit the model to the training image
-model.fit(train_X, train_y[:,:,:,0], epochs=2, verbose=1, batch_size=1)
+model.fit(train_X, train_y[:,:,:,0], epochs=500, verbose=1, batch_size=5)
 
 # Evaluate model
 # TODO model.evaluate(...)
