@@ -40,7 +40,7 @@ TO-DO
 ----------
 - Create a class to handle single image inputs and outputs 
 - Handling for differently sized images (currently 512x512 px only)
-- TensorFlow logging and model archival
+- TensorFlow logging and model archival, early stopping?
 - Expand model to more shape channels (currently triangles only)
 - Handling for different amounts of shapes (currently 5 only)
 - Test different loss functions (custom?) to compare atts. fairly

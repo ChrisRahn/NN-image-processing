@@ -11,7 +11,7 @@ from tensorflow import keras
 import keras.backend as K
 from tensorflow.keras.constraints import min_max_norm, non_neg
 import kernels
-from train_gen import CustomImage, ImageBundle
+from artist import CustomImage, ImageBundle
 import pickle
 
 # Load the training set from the pickled ImageBundle
