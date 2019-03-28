@@ -3,4 +3,3 @@
 """
 Runs the input image through the neural network model
 """
-

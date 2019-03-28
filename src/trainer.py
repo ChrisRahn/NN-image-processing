@@ -73,18 +73,11 @@ model = keras.Sequential([
             # kernel_constraint=kernel_nonneg,
             use_bias=True),
 
-        # Another Dense layer
-#        keras.layers.Dense(
-#            units=5,
-#            activation=None,
-#            # kernel_constraint=kernel_nonneg,
-#            use_bias=True),
-
-        # Output layer
+        # Activation layer
         keras.layers.PReLU(),
-        
-        # Reshape output
-        keras.layers.Reshape((5,5))
+
+        # Reshape & output
+        keras.layers.Reshape((5, 5))
         ])
 
 # Compile the model
@@ -92,17 +85,10 @@ model.compile(optimizer='adadelta',
               loss='mean_squared_error',
               metrics=['mean_squared_error'])
 
-# Fit the model to the training image
-model.fit(train_X, train_y[:,:,:,0], epochs=500, verbose=1, batch_size=5)
+# Fit the model to the training ImageBundle
+model.fit(train_X, train_y[:, :, :, 0], epochs=500, verbose=1, batch_size=5)
 
 # Evaluate model
 # TODO model.evaluate(...)
 
-# Repredict the training img
-#test_X = 255 - imread('../data/triforce.jpg')
-#test_X = np.reshape(test_X, (1, test_X.shape[0], test_X.shape[1], 1))
-#y_pred = model.predict(test_X)
-#imshow(test_X[0, :, :, 0])
-#print('Trained shape data: ', train_y)
-#print('Determined shape data: ', y_pred)
-#y_pred
+# TODO Repredict the training img

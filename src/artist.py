@@ -84,12 +84,9 @@ class CustomImage():
             ctx.fill()
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
+# TODO A class to handle and visualize a single image / ShapeList
+
 
 if (__name__ == '__main__'):
-#    test = CustomImage(512, 512)
-#    test.draw_tri(5)
-#    print(test.img[:, :, 0])
-#    test.surface.write_to_png('test.png')
-#    print(test.triangles)
     my_bundle = ImageBundle(25, 5, 512, 512)
     my_bundle.save('../data/train_set_01.pkl')
