@@ -12,11 +12,11 @@ import pickle
 class ImageBundle():
     def __init__(self, batch_size, num_tri, width, height):
         # Bundle individual images (array)
-        self.images = np.empty((batch_size, width, height, 1))
+        self.images = np.empty((batch_size, height, width, 1))
 
         # Bundle the arrays of triangle info as a separate attribute
         self.tri_list = np.empty((batch_size, num_tri, 5, 1))
-        for i in range(num_tri):
+        for i in range(batch_size):
             new_img = CustomImage(width, height)
             new_img.draw_tri(num_tri)
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
@@ -37,7 +37,7 @@ class CustomImage():
         # self.shape_types = ...
 
         # Initialize an array of white RGBA values (4 channel)
-        self.img = np.zeros((self.WIDTH, self.HEIGHT, 4), dtype=np.uint8)
+        self.img = np.zeros((self.HEIGHT, self.WIDTH, 4), dtype=np.uint8)
         # Initialize a Cairo context and drawing surface
         self.surface = cairo.ImageSurface.create_for_data(
             self.img,
