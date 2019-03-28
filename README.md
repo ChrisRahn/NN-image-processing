@@ -34,6 +34,7 @@ DEPENDENCIES
 - Keras 2.2.4-tf
 - NumPy 1.15.4
 - Cairo 1.14.12
+- PIL 1.1.7
 
 ----------
 TO-DO

@@ -7,6 +7,7 @@ import numpy as np
 import math
 import cairo
 import pickle
+from PIL import Image
 
 
 class ImageBundle():
@@ -95,7 +96,7 @@ class CustomImage():
 
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
-    IN: image width, image height, Nx5 NumPy array of triangle data'''
+    IN: image width, image height, ?x5 NumPy array of triangle data'''
     def __init__(self, width, height, triangles):
         super().__init__(width, height)
         self.triangles = triangles
@@ -112,8 +113,10 @@ class OutputImage(CustomImage):
             off_x, off_y, w_scale, h_scale, rot = triangle
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot)
 
-        # !!! Save the image to PNG
-        self.surface.write_to_png(open('display_test.png', 'wb'))
+        # Use PIL to show the image
+        with Image.fromarray(self.img, mode='RGBA') as out:
+            out.show()
+
 
 if (__name__ == '__main__'):
     my_bundle = ImageBundle(25, 5, 512, 512)
