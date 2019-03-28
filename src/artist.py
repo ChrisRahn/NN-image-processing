@@ -93,6 +93,11 @@ class CustomImage():
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
+    def display(self):
+        ''' Use PIL to show the image'''
+        with Image.fromarray(self.img, mode='RGBA') as out:
+            out.show()
+
 
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
@@ -100,9 +105,10 @@ class OutputImage(CustomImage):
     def __init__(self, width, height, triangles):
         super().__init__(width, height)
         self.triangles = triangles
+        self.update()
 
-    def display(self):
-        '''Display all of the stored shapes'''
+    def update(self):
+        '''Update the image array with the shapelists'''
         # Reset and clear the drawing surface
         self.ctx.identity_matrix()
         self.ctx.set_source_rgb(1.0, 1.0, 1.0)
@@ -112,10 +118,6 @@ class OutputImage(CustomImage):
         for triangle in self.triangles:
             off_x, off_y, w_scale, h_scale, rot = triangle
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot)
-
-        # Use PIL to show the image
-        with Image.fromarray(self.img, mode='RGBA') as out:
-            out.show()
 
 
 if (__name__ == '__main__'):
