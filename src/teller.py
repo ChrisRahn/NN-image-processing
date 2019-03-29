@@ -4,8 +4,9 @@
 Runs the input image through the neural network model
 """
 import tensorflow as tf
+from tensorflow import keras
 
-saver = tf.train.Saver()
+model = keras.models.load_model('../models/save.h5')
 
 if (__name__ == '__main__'):
     with tf.Session() as sess:

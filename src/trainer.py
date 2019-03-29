@@ -15,9 +15,6 @@ from artist import CustomImage, ImageBundle
 import pickle
 import sys
 
-# Enable eager execution
-tf.enable_eager_execution()
-
 # Define a simple triangular kernel and kernel constraints
 kernel_tri = tf.constant_initializer(kernels.triangle_5())
 kernel_const = min_max_norm(0.001, None, rate=1, axis=0)
@@ -26,13 +23,9 @@ kernel_nonneg = non_neg()
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 model = keras.Sequential([
-        # Input layer
-        keras.layers.InputLayer(
-            input_shape=(512, 512, 1)),
-
         # Maxpool the image
         keras.layers.MaxPool2D(
-            # input_shape=(512, 512, 1),
+            input_shape=(512, 512, 1),
             pool_size=2,
             padding='same',
             data_format='channels_last'),
@@ -75,7 +68,7 @@ model = keras.Sequential([
         ])
 
 # Define optimizer
-optimizer = tf.train.AdadeltaOptimizer()
+optimizer = keras.optimizers.Adadelta()
 
 # Compile the model
 model.compile(
@@ -83,31 +76,6 @@ model.compile(
     loss='mean_squared_error',
     metrics=['mean_squared_error'])
 
-# Define model checkpoint
-checkpoint = tf.train.Checkpoint(
-    optimizer=optimizer,
-    model=model,
-    optimizer_step=tf.train.get_or_create_global_step())
-
-checkpoint.save('../models/ckpt')
-
-# XXX Define model logging
-#logger = keras.callbacks.ModelCheckpoint(
-#        '../checkpoints/model_01.ckpt',
-#        monitor='loss',
-#        verbose=0,
-#        save_best_only=True,
-#        mode='auto',
-#        period=25)
-#logger.model = model
-
-# XXX Define model saver
-#saver = tf.train.Saver(
-#        var_list={'frac_model': model},
-#        reshape=False,
-#        max_to_keep=5,
-#        # filename=SAVE_FILEPATH
-#        )
 
 if (__name__ == '__main__'):
     try:
@@ -138,5 +106,14 @@ if (__name__ == '__main__'):
         verbose=1,
         batch_size=5)
 
-    # Save fitted model
-    print('\nModel saved at: %s' % SAVE_PATH)
+    # Write model config to YAML
+    model_yaml = model.to_yaml()
+    with open('../models/model_config.yaml', 'w') as yaml_file:
+        yaml_file.write(model_yaml)
+
+    # Save fitted model weights
+    model.save_weights('../models/model_weights_01.h5')
+
+    # Save model
+    model.save('../models/save.h5', overwrite=True, include_optimizer=True)
+#    print('\nModel saved at: %s' % SAVE_PATH)
