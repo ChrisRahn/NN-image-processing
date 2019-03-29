@@ -39,13 +39,13 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Create a class to handle single image inputs
+- Create a class to handle single image inputs from CLI
 - Handling for different amounts of shapes (currently 5 only)
+- Test different loss functions (Jaccard Sim?) to compare atts. fairly
+- Test different conv. kernel initializers (Sobel?)
 - Handling for differently sized images (currently 512x512 px only)
 - TensorFlow logging, early stopping?
 - Expand model to more shape channels (currently triangles only)
-- Test different loss functions (custom?) to compare atts. fairly
-- Test different conv. kernel initializers
 - More NN layers? (Try another Dense)
 - Web app framework to ingest a new image and report result
 - Better Markdown in this README!
