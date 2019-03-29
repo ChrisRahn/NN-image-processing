@@ -4,6 +4,7 @@
 Generator script for training image-bundles
 """
 import numpy as np
+import io
 import math
 import cairo
 import pickle
@@ -99,6 +100,29 @@ class CustomImage():
             out.show()
 
 
+class InputImage():
+    '''A object just for handling model inputs
+    IN: A path to a 512x512 JPEG file'''
+
+    def __init__(self, image_path):
+        img_in = Image.open(image_path)
+
+#        # Add alpha channel if not present
+        if 'A' not in img_in.getbands():
+            img_in.putalpha(256)
+
+        # Cast into a NumPy array through a Cairo surface
+        # Image is saved as greyscale for now
+        barr = bytearray(img_in.tobytes('raw', 'RGBA'))
+        self.surface = cairo.ImageSurface.create_for_data(
+            barr,
+            cairo.FORMAT_ARGB32,
+            512, 512)
+        buff = self.surface.get_data()
+        self.data = np.ndarray(shape=(512, 512, 4), dtype=np.uint8, buffer=buff)
+        
+        
+
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
     IN: image width, image height, ?x5 NumPy array of triangle data'''
@@ -121,5 +145,9 @@ class OutputImage(CustomImage):
 
 
 if (__name__ == '__main__'):
-    my_bundle = ImageBundle(25, 5, 512, 512)
-    my_bundle.save('../data/train_set_01.pkl')
+#    my_bundle = ImageBundle(25, 5, 512, 512)
+#    my_bundle.save('../data/train_set_01.pkl')
+    test = InputImage('../data/triforce.jpg')
+    test.data.shape
+    imshow(test.data[:,:,0])
+
