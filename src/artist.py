@@ -107,21 +107,26 @@ class InputImage():
     def __init__(self, image_path):
         img_in = Image.open(image_path)
 
-#        # Add alpha channel if not present
+        # Add alpha channel if not present
         if 'A' not in img_in.getbands():
             img_in.putalpha(256)
 
+        # Convert to greyscale mode (for now)
+        img_grey = img_in.convert('L')
+
         # Cast into a NumPy array through a Cairo surface
-        # Image is saved as greyscale for now
-        barr = bytearray(img_in.tobytes('raw', 'RGBA'))
+        # TODO Image is saved as greyscale for now
+        barr = bytearray(img_grey.tobytes('raw', 'L'))
         self.surface = cairo.ImageSurface.create_for_data(
             barr,
-            cairo.FORMAT_ARGB32,
+            cairo.FORMAT_A8,
             512, 512)
         buff = self.surface.get_data()
-        self.data = np.ndarray(shape=(512, 512, 4), dtype=np.uint8, buffer=buff)
-        
-        
+        self.data = np.ndarray(
+            shape=(512, 512, 1),
+            dtype=np.uint8,
+            buffer=buff)
+
 
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
