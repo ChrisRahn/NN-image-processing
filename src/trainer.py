@@ -15,18 +15,8 @@ from artist import CustomImage, ImageBundle
 import pickle
 import sys
 
-TRAINING_SET = '../data/train_set_01.pkl'
-SAVE_FILEPATH = '../checkpoints/fracture.ckpt'
-
-# Load the training set from the pickled ImageBundle
-train_bundle = pickle.load(open(TRAINING_SET, 'rb'))
-train_X = train_bundle.images
-train_y = train_bundle.tri_list
-
-# IN: (samples, rows, cols, channels)
-IN_SHAPE = train_X.shape
-# OUT: (samples, shape_idx, shape_attrs, channels)
-OUT_SHAPE = train_y.shape
+# Enable eager execution
+tf.enable_eager_execution()
 
 # Define a simple triangular kernel and kernel constraints
 kernel_tri = tf.constant_initializer(kernels.triangle_5())
@@ -84,43 +74,69 @@ model = keras.Sequential([
         keras.layers.Reshape((5, 5))
         ])
 
+# Define optimizer
+optimizer = tf.train.AdadeltaOptimizer()
+
 # Compile the model
-model.compile(optimizer='adadelta',
-              loss='mean_squared_error',
-              metrics=['mean_squared_error'])
+model.compile(
+    optimizer=optimizer,
+    loss='mean_squared_error',
+    metrics=['mean_squared_error'])
 
-# ??? Define model logging
-logger = keras.callbacks.ModelCheckpoint(
-        '../checkpoints/model_01.ckpt',
-        monitor='loss',
-        verbose=0,
-        save_best_only=True,
-        mode='auto',
-        period=25)
-logger.model = model
+# Define model checkpoint
+checkpoint = tf.train.Checkpoint(
+    optimizer=optimizer,
+    model=model,
+    optimizer_step=tf.train.get_or_create_global_step())
 
-# Define model saver
-saver = tf.train.Saver(
-        var_list={'frac_model': model},
-        reshape=False,
-        max_to_keep=5,
-        # filename=SAVE_FILEPATH
-        )
+checkpoint.save('../models/ckpt')
+
+# XXX Define model logging
+#logger = keras.callbacks.ModelCheckpoint(
+#        '../checkpoints/model_01.ckpt',
+#        monitor='loss',
+#        verbose=0,
+#        save_best_only=True,
+#        mode='auto',
+#        period=25)
+#logger.model = model
+
+# XXX Define model saver
+#saver = tf.train.Saver(
+#        var_list={'frac_model': model},
+#        reshape=False,
+#        max_to_keep=5,
+#        # filename=SAVE_FILEPATH
+#        )
 
 if (__name__ == '__main__'):
-    with tf.Session() as sess:
-        # Initialize the training set
+    try:
+        TRAINING_SET = sys.argv[1]
+        SAVE_PATH = sys.argv[2]
+    except IndexError:
+        print('Pass me both the training set and save filepaths!')
+        TRAINING_SET = '../data/train_set_01.pkl'
+        SAVE_PATH = '../models/saved_model_01.pkl'
+#        sys.exit()
 
-        # TODO sess.run(initializer)
+    # Load the training set from the pickled ImageBundle
+    train_bundle = pickle.load(open(TRAINING_SET, 'rb'))
+    train_X = train_bundle.images
+    train_y = train_bundle.tri_list
 
-        # Fit the model to the training ImageBundle
-        model.fit(
-            train_X,
-            train_y[:, :, :, 0],
-            epochs=50,
-            verbose=1,
-            batch_size=5)
+    # IN: (samples, rows, cols, channels)
+    IN_SHAPE = train_X.shape
+    # OUT: (samples, shape_idx, shape_attrs, channels)
+    OUT_SHAPE = train_y.shape
+    # Initialize the training set
 
-        # Save session checkpoint
-        save_path = saver.save(sess, SAVE_FILEPATH)
-        print('Model saved at: %s' % save_path)
+    # Fit the model to the training ImageBundle
+    model.fit(
+        train_X,
+        train_y[:, :, :, 0],
+        epochs=50,
+        verbose=1,
+        batch_size=5)
+
+    # Save fitted model
+    print('\nModel saved at: %s' % SAVE_PATH)
