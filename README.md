@@ -39,7 +39,7 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Create a class to handle single image inputs and outputs 
+- Create a class to handle single image inputs
 - Handling for differently sized images (currently 512x512 px only)
 - TensorFlow logging and model archival, early stopping?
 - Expand model to more shape channels (currently triangles only)

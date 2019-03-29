@@ -13,6 +13,7 @@ from tensorflow.keras.constraints import min_max_norm, non_neg
 import kernels
 from artist import CustomImage, ImageBundle
 import pickle
+import sys
 
 # Load the training set from the pickled ImageBundle
 train_bundle = pickle.load(open('../data/train_set_01.pkl', 'rb'))
@@ -85,10 +86,34 @@ model.compile(optimizer='adadelta',
               loss='mean_squared_error',
               metrics=['mean_squared_error'])
 
-# Fit the model to the training ImageBundle
-model.fit(train_X, train_y[:, :, :, 0], epochs=500, verbose=1, batch_size=5)
+# ??? Define model logging
+logger = keras.callbacks.ModelCheckpoint(
+        '../models/model_01.ckpt',
+        monitor='loss',
+        verbose=0,
+        save_best_only=True,
+        mode='auto',
+        period=25)
+logger.model = model
 
-# Evaluate model
-# TODO model.evaluate(...)
+# Define model saver
+saver = tf.train.Saver(
+        var_list={'frac_model': model},
+        reshape=False,
+        max_to_keep=5,
+        #filename=SAVE_FILEPATH
+        )
 
-# TODO Repredict the training img
+if (__name__ == '__main__'):
+    #TRAINING_SET = sys.argv[1]
+    #SAVE_FILEPATH = sys.argv[2]
+    with tf.Session() as sess:
+        # Initialize the training set
+
+        # TODO sess.run(initializer)
+
+        # Fit the model to the training ImageBundle
+        model.fit(train_X, train_y[:, :, :, 0], epochs=100, verbose=1, batch_size=5)
+
+        save_path = saver.save(sess, '../models/fracture.ckpt')
+        print('Model saved at: %s' % save_path)
