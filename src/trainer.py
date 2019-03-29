@@ -78,6 +78,7 @@ model.compile(
 
 
 if (__name__ == '__main__'):
+    assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
     try:
         TRAINING_SET = sys.argv[1]
         SAVE_PATH = sys.argv[2]
@@ -111,9 +112,6 @@ if (__name__ == '__main__'):
     with open('../models/model_config.yaml', 'w') as yaml_file:
         yaml_file.write(model_yaml)
 
-    # Save fitted model weights
-    model.save_weights('../models/model_weights_01.h5')
-
     # Save model
-    model.save('../models/save.h5', overwrite=True, include_optimizer=True)
-#    print('\nModel saved at: %s' % SAVE_PATH)
+    model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
+    print('\nModel saved at: %s' % SAVE_PATH)

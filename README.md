@@ -44,6 +44,7 @@ TO-DO
 - Test different loss functions (Jaccard Sim?) to compare atts. fairly
 - Test different conv. kernel initializers (Sobel?)
 - Handling for differently sized images (currently 512x512 px only)
+- Sort out RGB channel handling
 - TensorFlow logging, early stopping?
 - Expand model to more shape channels (currently triangles only)
 - More NN layers? (Try another Dense)
