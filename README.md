@@ -40,10 +40,10 @@ DEPENDENCIES
 TO-DO
 ----------
 - Create a class to handle single image inputs
-- Handling for differently sized images (currently 512x512 px only)
-- TensorFlow logging and model archival, early stopping?
-- Expand model to more shape channels (currently triangles only)
 - Handling for different amounts of shapes (currently 5 only)
+- Handling for differently sized images (currently 512x512 px only)
+- TensorFlow logging, early stopping?
+- Expand model to more shape channels (currently triangles only)
 - Test different loss functions (custom?) to compare atts. fairly
 - Test different conv. kernel initializers
 - More NN layers? (Try another Dense)
