@@ -39,7 +39,6 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Create a class to handle single image inputs from CLI
 - Handling for different amounts of shapes (currently 5 only)
 - Test different loss functions (Jaccard Sim?) to compare atts. fairly
 - Test different conv. kernel initializers (Sobel?)
