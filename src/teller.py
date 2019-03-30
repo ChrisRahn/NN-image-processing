@@ -3,12 +3,20 @@
 """
 Runs the input image through the neural network model
 """
-import tensorflow as tf
+import sys
 from tensorflow import keras
+from artist import InputImage
 
-model = keras.models.load_model('../models/save.h5')
+model = keras.models.load_model('../models/saved_model_01.h5')
 
 if (__name__ == '__main__'):
-    with tf.Session() as sess:
-        saver.restore(sess, '../checkpoints/fracture.ckpt')
-        print('Successfully restored model')
+#    assert len(sys.argv) == 2, 'Gotta give me a JPEG to predict!'
+    # XXX Testing constants - Remove
+    try:
+        IMAGE_PATH = sys.argv[1]
+    except IndexError:
+        IMAGE_PATH = '../data/triforce.jpg'
+
+    img_in = InputImage(IMAGE_PATH)
+    img_feed = img_in.data.reshape(1, 512, 512, 1)  # TODO Allow sizes
+    shapes_out = model.predict(img_feed)

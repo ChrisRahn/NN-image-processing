@@ -1,0 +1,102 @@
+backend: tensorflow
+class_name: Sequential
+config:
+  layers:
+  - class_name: MaxPooling2D
+    config:
+      batch_input_shape: !!python/tuple [null, 512, 512, 1]
+      data_format: channels_last
+      dtype: float32
+      name: max_pooling2d
+      padding: same
+      pool_size: !!python/tuple [2, 2]
+      strides: !!python/tuple [2, 2]
+      trainable: true
+  - class_name: Conv2D
+    config:
+      activation: sigmoid
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {dtype: float32}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: &id002 !!python/tuple [1, 1]
+      dtype: float32
+      filters: 5
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: GlorotUniform
+        config: {dtype: float32, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id001 !!python/tuple [8, 8]
+      name: conv2d
+      padding: same
+      strides: *id001
+      trainable: true
+      use_bias: true
+  - class_name: Conv2D
+    config:
+      activation: sigmoid
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {dtype: float32}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id002
+      dtype: float32
+      filters: 5
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: GlorotUniform
+        config: {dtype: float32, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id001
+      name: conv2d_1
+      padding: same
+      strides: *id001
+      trainable: true
+      use_bias: true
+  - class_name: Flatten
+    config: {data_format: channels_last, dtype: float32, name: flatten, trainable: true}
+  - class_name: Dense
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {dtype: float32}
+      bias_regularizer: null
+      dtype: float32
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: GlorotUniform
+        config: {dtype: float32, seed: null}
+      kernel_regularizer: null
+      name: dense
+      trainable: true
+      units: 25
+      use_bias: true
+  - class_name: PReLU
+    config:
+      alpha_constraint: null
+      alpha_initializer:
+        class_name: Zeros
+        config: {dtype: float32}
+      alpha_regularizer: null
+      dtype: float32
+      name: p_re_lu
+      shared_axes: null
+      trainable: true
+  - class_name: Reshape
+    config:
+      dtype: float32
+      name: reshape
+      target_shape: !!python/tuple [5, 5]
+      trainable: true
+  name: sequential
+keras_version: 2.2.4-tf

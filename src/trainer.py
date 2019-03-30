@@ -79,13 +79,14 @@ model.compile(
 
 if (__name__ == '__main__'):
     assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
+    # XXX Testing constants - Remove
     try:
         TRAINING_SET = sys.argv[1]
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
         TRAINING_SET = '../data/train_set_01.pkl'
-        SAVE_PATH = '../models/saved_model_01.pkl'
+        SAVE_PATH = '../models/saved_model_01.h5'
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
