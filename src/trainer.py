@@ -128,7 +128,8 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_02.pkl' # HINT input('What\'s the training set filepath?')
+        TRAINING_SET = '../data/train_set_03.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_03.pkl'
         SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
@@ -136,6 +137,11 @@ if (__name__ == '__main__'):
     train_bundle = pickle.load(open(TRAINING_SET, 'rb'))
     train_X = train_bundle.images
     train_y = train_bundle.tri_list
+
+    # Load the testing set from the pickled ImageBundle
+    test_bundle = pickle.load(open(TESTING_SET, 'rb'))
+    test_X = test_bundle.images
+    test_y = test_bundle.tri_list
 
     # IN: (samples, rows, cols, channels)
     IN_SHAPE = train_X.shape
@@ -150,6 +156,11 @@ if (__name__ == '__main__'):
         epochs=50,
         verbose=1,
         batch_size=5)
+
+    # Model evalutaion
+    print(model.evaluate(
+            test_X,
+            test_y[:, :, :, 0]))
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
