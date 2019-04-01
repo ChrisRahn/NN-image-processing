@@ -24,6 +24,10 @@ class ImageBundle():
             new_img.rand_tri(num_tri)
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
             self.tri_list[i, :, :, 0] = new_img.triangles[:, :]
+            # Reorder tri_list from largest to smallest (by w_scale*h_scale)
+            areas = self.tri_list[i, :, 2, 0] * self.tri_list[i, :, 3, 0]
+            sorted_areas = self.tri_list[i, np.argsort(areas)[-1::-1], :, 0]
+            self.tri_list[i, :, :, 0] = sorted_areas
 
     def save(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
