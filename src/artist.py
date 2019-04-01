@@ -100,7 +100,7 @@ class CustomImage():
             out.show()
 
 
-class InputImage():
+class InputImage(CustomImage):
     '''A object just for handling model inputs
     IN: A path to a 512x512 JPEG file'''
 

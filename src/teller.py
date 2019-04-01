@@ -27,5 +27,6 @@ if (__name__ == '__main__'):
     # Wrap the raw output in the OutputImage class
     img_out = OutputImage(512, 512, shapes_out)  # TODO sizes
 
-    # Display the output image
+    # Display both the input and output image
+    img_in.display()
     img_out.display()

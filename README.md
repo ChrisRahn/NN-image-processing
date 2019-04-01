@@ -18,14 +18,13 @@ MODEL
 
 A sequential Tensorflow neural network with these layers:
 
--    1. Input layer (IN: 512x512 px, 1 channel = 512x512x1)
--    2. MaxPool with size 2 window (OUT: 256x256x1)
--    3. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 64x64x5)
--    4. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 8x8x25)
--    5. Flatten operation (OUT: 1600)
--    6. Densely-connected layer, 25 nodes (OUT: 25)
--    7. PReLU (Parametric ReLU) activation function (OUT: 25)
--    8. Reshaping to 5x5 output (OUT: 5x5)
+-    1. MaxPool with size 2 window (IN: 512x512 px, 1 channel = 512x512x1, OUT: 256x256x1)
+-    2. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 64x64x5)
+-    3. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 8x8x25)
+-    4. Flatten operation (OUT: 1600)
+-    5. Densely-connected layer, 25 nodes (OUT: 25)
+-    6. PReLU (Parametric ReLU) activation function (OUT: 25)
+-    7. Reshaping to 5x5 output (OUT: 5x5)
 
 ----------
 DEPENDENCIES
