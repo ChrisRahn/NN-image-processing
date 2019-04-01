@@ -106,17 +106,18 @@ class CustomImage():
 
 class InputImage(CustomImage):
     '''A object just for handling model inputs
+    (__init__() and display() overwritten)
     IN: A path to a 512x512 JPEG file'''
 
     def __init__(self, image_path):
-        img_in = Image.open(image_path)
+        self.img_in = Image.open(image_path)
 
         # Add alpha channel if not present
-        if 'A' not in img_in.getbands():
-            img_in.putalpha(256)
+        if 'A' not in self.img_in.getbands():
+            self.img_in.putalpha(256)
 
         # Convert to greyscale mode (for now)
-        img_grey = img_in.convert('L')
+        img_grey = self.img_in.convert('L')
 
         # Cast into a NumPy array through a Cairo surface
         # TODO Image is saved as greyscale for now
@@ -130,6 +131,9 @@ class InputImage(CustomImage):
             shape=(512, 512, 1),
             dtype=np.uint8,
             buffer=buff)
+
+    def display(self):
+        self.img_in.show()
 
 
 class OutputImage(CustomImage):
