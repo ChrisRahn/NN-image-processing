@@ -9,6 +9,18 @@ import keras.backend as K
 # Simple arrays for testing
 
 
+def sobel_x():
+    return np.array([[-1, 0, 1],
+                     [-2, 0, 2],
+                     [-1, 0, 1]])
+
+
+def sobel_y():
+    return np.array([[1, 2, 1],
+                     [0, 0, 0],
+                     [-1, -2, -1]])
+
+
 def triangle_5():
     return np.array([[0, 0, 1, 0, 0],
                      [0, 0.5, 1, 0.5, 0],
