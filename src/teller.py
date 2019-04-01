@@ -17,6 +17,11 @@ if (__name__ == '__main__'):
     except IndexError:
         IMAGE_PATH = '../data/triforce.jpg'
 
+    try:
+        NUM_SHAPES = int(sys.argv[2])
+    except IndexError:
+        NUM_SHAPES = 5
+
     # Read in the passed image
     img_in = InputImage(IMAGE_PATH)
 
@@ -24,8 +29,14 @@ if (__name__ == '__main__'):
     model_feed = img_in.data.reshape(1, 512, 512, 1)  # TODO Allow sizes
     shapes_out = model.predict(model_feed)[0, :, :]
 
+    # Filter to the number of shapes desired (NUM_SHAPES)
+    shapes_filt = shapes_out[:NUM_SHAPES, :]
+
+    # Print the numerical output to the console
+    print(shapes_filt)
+
     # Wrap the raw output in the OutputImage class
-    img_out = OutputImage(512, 512, shapes_out)  # TODO sizes
+    img_out = OutputImage(512, 512, shapes_filt)  # TODO sizes
 
     # Display both the input and output image
     img_in.display()
