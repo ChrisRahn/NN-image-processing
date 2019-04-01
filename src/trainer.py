@@ -88,14 +88,14 @@ def scaled_mse(y_true, y_pred):
     return K.mean(math_ops.square(y_true - y_pred), axis=-1)
 
 
-# Add the custom loss to the loss dictionary
-tf.losses.add_loss(scaled_mse)
+## XXX Add the custom loss to the loss dictionary
+#tf.losses.add_loss(scaled_mse)
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss=scaled_mse,
-    metrics=[scaled_mse])
+    loss='mean_squared_error',
+    metrics=['mean_squared_error'])
 
 
 if (__name__ == '__main__'):
