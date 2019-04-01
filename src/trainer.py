@@ -10,6 +10,9 @@ import tensorflow as tf
 from tensorflow import keras
 import keras.backend as K
 from tensorflow.keras.constraints import min_max_norm, non_neg
+from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.python.framework import ops
+from tensorflow.python.ops import math_ops
 import kernels
 from artist import CustomImage, ImageBundle
 import pickle
@@ -69,6 +72,25 @@ model = keras.Sequential([
 
 # Define optimizer
 optimizer = keras.optimizers.Adadelta()
+
+# Define custom loss function
+
+
+class tri_loss(MeanSquaredError):
+    def call(self, y_true, y_pred):
+        '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
+        x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
+        Scale all to be [0, 1]'''
+        y_pred = ops.convert_to_tensor(y_pred)
+        y_true = math_ops.cast(y_true, y_pred.dtype)
+        scales = np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]])
+        y_true = y_true * scales
+        y_pred = y_pred * scales
+        return K.mean(math_ops.square(y_true - y_pred), axis=-1)
+
+
+# Add the custom loss to the loss dictionary
+tf.losses.add_loss(tri_loss)
 
 # Compile the model
 model.compile(
