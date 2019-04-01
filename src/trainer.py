@@ -36,7 +36,7 @@ model = keras.Sequential([
         # Convolve the pooled image by the shape kernel(s)
         # ??? Use LocallyConnected2D instead?
         keras.layers.Conv2D(
-            filters=5,
+            filters=10,
             kernel_size=(8, 8),
             strides=(8, 8),
             padding='same',
@@ -46,15 +46,23 @@ model = keras.Sequential([
             # ??? kernel_initializer=kernel_tri,
             # kernel_constraint=kernel_nonneg),
         keras.layers.Conv2D(
-            filters=5,
+            filters=10,
             kernel_size=(8, 8),
             strides=(8, 8),
             padding='same',
             data_format='channels_last',
             activation='sigmoid',
             use_bias=True),
+
         # Flatten
         keras.layers.Flatten(),
+
+#        # Basic Dense layer
+#        keras.layers.Dense(
+#            units=15 * 30,  # !!! 30 output shapes per channel
+#            activation=None,
+#            # kernel_constraint=kernel_nonneg,
+#            use_bias=True),
 
         # Basic Dense layer
         keras.layers.Dense(
@@ -106,8 +114,8 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = input('What\'s the training set filepath?')
-        SAVE_PATH = input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_02.pkl' # HINT input('What\'s the training set filepath?')
+        SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
