@@ -9,6 +9,7 @@ import math
 import cairo
 import pickle
 from PIL import Image
+from matplotlib.pyplot import imshow
 
 
 class ImageBundle():
@@ -158,9 +159,10 @@ class OutputImage(CustomImage):
 
 
 if (__name__ == '__main__'):
-#    my_bundle = ImageBundle(25, 5, 512, 512)
-#    my_bundle.save('../data/train_set_01.pkl')
-    test = InputImage('../data/triforce.jpg')
-    test.data.shape
-    imshow(test.data[:,:,0])
-
+    create_bundle_size = int(input('Create how many images?'))
+    create_num_tri = int(input('How many triangles per image?'))
+    create_save_path = input('Path (.pkl) to save to?')
+    new_bundle = ImageBundle(create_bundle_size, create_num_tri, 512, 512)
+    new_bundle.save(create_save_path)
+    print('Here\'s the first of the new images I just created.')
+    OutputImage(512, 512, new_bundle.tri_list[0, :, :, 0]).display()
