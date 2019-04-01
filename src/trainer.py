@@ -28,16 +28,11 @@ kernel_sobel_y = tf.constant_initializer(kernels.sobel_y())
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 model = keras.Sequential([
-        # Maxpool the image
-#        keras.layers.MaxPool2D(
-#            input_shape=(512, 512, 1),
-#            pool_size=2,
-#            padding='same',
-#            data_format='channels_last'),
 
         # Convolve the pooled image by the shape kernel(s)
         # ??? Use LocallyConnected2D instead?
         keras.layers.Conv2D(
+            input_shape=(512, 512, 1),
             filters=1,
             kernel_size=(3, 3),
             strides=(1, 1),
@@ -47,15 +42,23 @@ model = keras.Sequential([
             use_bias=True,
             kernel_initializer=kernel_sobel_x),
             # kernel_constraint=kernel_nonneg),
-        keras.layers.Conv2D(
-            filters=1,
-            kernel_size=(3, 3),
-            strides=(1, 1),
+#        keras.layers.Conv2D(
+#            filters=1,
+#            kernel_size=(3, 3),
+#            strides=(1, 1),
+#            padding='same',
+#            data_format='channels_last',
+#            activation='sigmoid',
+#            use_bias=True,
+#            kernel_initializer=kernel_sobel_y),
+
+        # Maxpool the image
+        keras.layers.MaxPool2D(
+            # input_shape=(512, 512, 1),
+            pool_size=2,
             padding='same',
-            data_format='channels_last',
-            activation='sigmoid',
-            use_bias=True,
-            kernel_initializer=kernel_sobel_y),
+            data_format='channels_last'),
+
         keras.layers.Conv2D(
             filters=30,
             kernel_size=(8, 8),
