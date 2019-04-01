@@ -55,7 +55,7 @@ model = keras.Sequential([
 
         # Basic Dense layer
         keras.layers.Dense(
-            units=25,
+            units=5 * 30,  # !!! 30 output shapes per channel
             activation=None,
             # kernel_constraint=kernel_nonneg,
             use_bias=True),
@@ -64,7 +64,7 @@ model = keras.Sequential([
         keras.layers.PReLU(),
 
         # Reshape & output
-        keras.layers.Reshape((5, 5))
+        keras.layers.Reshape((30, 5))
         ])
 
 # Define optimizer
@@ -78,15 +78,15 @@ model.compile(
 
 
 if (__name__ == '__main__'):
-    assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
+#    assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
     # XXX Testing constants - Remove
     try:
         TRAINING_SET = sys.argv[1]
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_01.pkl'
-        SAVE_PATH = '../models/saved_model_01.h5'
+        TRAINING_SET = input('What\'s the training set filepath?')
+        SAVE_PATH = input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle

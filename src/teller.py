@@ -7,7 +7,8 @@ import sys
 from tensorflow import keras
 from artist import InputImage, OutputImage
 
-model = keras.models.load_model('../models/saved_model_01.h5')
+MODEL_PATH = input('Which saved model should I use?')
+model = keras.models.load_model(MODEL_PATH)
 
 if (__name__ == '__main__'):
     # ??? assert len(sys.argv) == 2, 'Gotta give me a JPEG to predict!'
@@ -20,7 +21,7 @@ if (__name__ == '__main__'):
     try:
         NUM_SHAPES = int(sys.argv[2])
     except IndexError:
-        NUM_SHAPES = 5
+        NUM_SHAPES = 10
 
     # Read in the passed image
     img_in = InputImage(IMAGE_PATH)
@@ -30,6 +31,7 @@ if (__name__ == '__main__'):
     shapes_out = model.predict(model_feed)[0, :, :]
 
     # Filter to the number of shapes desired (NUM_SHAPES)
+    print(NUM_SHAPES)
     shapes_filt = shapes_out[:NUM_SHAPES, :]
 
     # Print the numerical output to the console
