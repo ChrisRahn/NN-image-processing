@@ -6,9 +6,7 @@ Runs the input image through the neural network model
 import sys
 from tensorflow import keras
 from artist import InputImage, OutputImage
-
-MODEL_PATH = input('Which saved model should I use?')
-model = keras.models.load_model(MODEL_PATH)
+from trainer import scaled_mse
 
 if (__name__ == '__main__'):
     # ??? assert len(sys.argv) == 2, 'Gotta give me a JPEG to predict!'
@@ -22,6 +20,10 @@ if (__name__ == '__main__'):
         NUM_SHAPES = int(sys.argv[2])
     except IndexError:
         NUM_SHAPES = 10
+
+    MODEL_PATH = input('Which saved model should I use?')
+    model = keras.models.load_model(MODEL_PATH,
+                                    custom_objects={'scaled_mse': scaled_mse})
 
     # Read in the passed image
     img_in = InputImage(IMAGE_PATH)

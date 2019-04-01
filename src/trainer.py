@@ -76,27 +76,26 @@ optimizer = keras.optimizers.Adadelta()
 # Define custom loss function
 
 
-class tri_loss(MeanSquaredError):
-    def call(self, y_true, y_pred):
-        '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
-        x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
-        Scale all to be [0, 1]'''
-        y_pred = ops.convert_to_tensor(y_pred)
-        y_true = math_ops.cast(y_true, y_pred.dtype)
-        scales = np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]])
-        y_true = y_true * scales
-        y_pred = y_pred * scales
-        return K.mean(math_ops.square(y_true - y_pred), axis=-1)
+def scaled_mse(y_true, y_pred):
+    '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
+    x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
+    Scale all to be [0, 1]'''
+    y_pred = ops.convert_to_tensor(y_pred)
+    y_true = math_ops.cast(y_true, y_pred.dtype)
+    scales = np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]])
+    y_true = y_true * scales
+    y_pred = y_pred * scales
+    return K.mean(math_ops.square(y_true - y_pred), axis=-1)
 
 
 # Add the custom loss to the loss dictionary
-tf.losses.add_loss(tri_loss)
+tf.losses.add_loss(scaled_mse)
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss='mean_squared_error',
-    metrics=['mean_squared_error'])
+    loss=scaled_mse,
+    metrics=[scaled_mse])
 
 
 if (__name__ == '__main__'):
