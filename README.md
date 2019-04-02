@@ -38,13 +38,12 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Handling for different amounts of shapes (currently 5 only)
 - Test different loss functions (Jaccard Sim?) to compare atts. fairly
 - Test different conv. kernel initializers (Sobel?)
 - Handling for differently sized images (currently 512x512 px only)
 - Sort out RGB channel handling
+- Enforce more consistent filename I/O
 - TensorFlow logging, early stopping?
 - Expand model to more shape channels (currently triangles only)
-- More NN layers? (Try another Dense)
 - Web app framework to ingest a new image and report result
 - Better Markdown in this README!

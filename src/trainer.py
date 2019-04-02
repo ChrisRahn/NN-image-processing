@@ -34,11 +34,11 @@ model = keras.Sequential([
         keras.layers.Conv2D(
             input_shape=(512, 512, 1),
             filters=15,
-            kernel_size=(5, 5),
+            kernel_size=(3, 3),
             strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='relu',
+            activation='sigmoid',
             use_bias=True),
 #            kernel_initializer=kernel_sobel_x),
             # kernel_constraint=kernel_nonneg),
@@ -60,12 +60,12 @@ model = keras.Sequential([
             data_format='channels_last'),
 
         keras.layers.Conv2D(
-            filters=30,
-            kernel_size=(5, 5),
+            filters=15,
+            kernel_size=(3, 3),
             strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='relu',
+            activation='sigmoid',
             use_bias=True),
 
         # Maxpool the image
@@ -81,17 +81,17 @@ model = keras.Sequential([
         # Basic Dense layer
         keras.layers.Dense(
             units=300,
-            activation='relu',
+            activation=None,
             # kernel_constraint=kernel_nonneg,
             use_bias=True),
-
-        # Activation layer
-#        keras.layers.PReLU(),
 
         # Basic Dense layer
         keras.layers.Dense(
             units=150,  # !!! 30 output shapes per channel
             activation='relu'),
+
+        # Activation layer
+        keras.layers.PReLU(),
 
         # Reshape & output
         keras.layers.Reshape((30, 5))
@@ -158,7 +158,7 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         train_y[:, :, :, 0],
-        epochs=50,
+        epochs=10,
         verbose=1,
         batch_size=5)
 
