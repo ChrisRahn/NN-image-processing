@@ -18,13 +18,16 @@ MODEL
 
 A sequential Tensorflow neural network with these layers:
 
--    1. MaxPool with size 2 window (IN: 512x512 px, 1 channel = 512x512x1, OUT: 256x256x1)
--    2. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 64x64x5)
--    3. 2D Convolution with 8x8 kernel, stride 8, 5 filters (OUT: 8x8x25)
--    4. Flatten operation (OUT: 1600)
--    5. Densely-connected layer, 25 nodes (OUT: 25)
--    6. PReLU (Parametric ReLU) activation function (OUT: 25)
--    7. Reshaping to 5x5 output (OUT: 5x5)
+-   IN: 512x512 px greyscale image (1 channel)
+-   1. 2D Convolution, 3x3 kernel, stride 1, 15 filters
+-   2. MaxPool, size 2
+-   3. 2D Convolution, 3x3 kernel, stride 1, 15 filters
+-   4. MaxPool, size 2
+-   5. Flatten operation
+-   6. Dense layer, 300 nodes
+-   7. Dense layer, 150 nodes
+-   8. Parametric ReLU activation layer
+-   9. Reshape operation to 30x5 output
 
 ----------
 DEPENDENCIES
@@ -38,7 +41,7 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Test different loss functions (Jaccard Sim?) to compare atts. fairly
+- Re-do loss function to invoke the output drawing methods, then compare result to input image
 - Test different conv. kernel initializers (Sobel?)
 - Handling for differently sized images (currently 512x512 px only)
 - Sort out RGB channel handling
