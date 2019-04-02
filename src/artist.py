@@ -70,7 +70,7 @@ class CustomImage():
         ctx.line_to(-0.125*WIDTH, 0.072*HEIGHT)
         ctx.close_path()
 
-    def draw_tri(self, off_x, off_y, w_scale, h_scale, rot, alpha=1.0):
+    def draw_tri(self, off_x, off_y, w_scale, h_scale, rot, alpha=0.5):
         ''' Draw a particular triangle using triangle() as a template'''
         ctx = self.ctx
         # Reset drawing transformation and choose black source
@@ -96,7 +96,7 @@ class CustomImage():
             h_scale = np.clip(2 * np.random.rand(), 0.1, 4)
             rot = 2 * math.pi * np.random.rand()
 
-            self.draw_tri(off_x, off_y, w_scale, h_scale, rot)
+            self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
     def display(self):
@@ -155,8 +155,11 @@ class OutputImage(CustomImage):
         # Draw each triangle stored in the triangle array
         for triangle in self.triangles:
             off_x, off_y, w_scale, h_scale, rot = triangle
-            self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.4)
+            self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
 
+
+
+    
 
 if (__name__ == '__main__'):
     create_bundle_size = int(input('Create how many images?'))
