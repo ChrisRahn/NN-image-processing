@@ -28,14 +28,14 @@ kernel_sobel_y = tf.constant_initializer(kernels.sobel_y())
 sess = tf.Session()
 
 
-def build_pred_img(y_pred):
-    y_pred_plhdr = tf.placeholder(tf.float32, shape=(512, 512, 1))
-    y_pred = y_pred_plhdr
-    shape_arr = y_pred.eval(
-        feed_dict={y_pred_plhdr: np.random.rand(512, 512, 1)},
+def build_pred_img(y_in):
+    y_in_plhdr = tf.placeholder(tf.float32, shape=(30, 5))
+    y_in = y_in_plhdr
+    shape_arr = y_in.eval(
+        feed_dict={y_in_plhdr: np.random.rand(30, 5)},
         session=sess)
     y_pred_img = OutputImage(512, 512, shape_arr).img[:, :, 0]
-    return K.constant(y_pred_img)
+    return K.variable(y_pred_img)
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
@@ -108,7 +108,7 @@ model = keras.Sequential([
         # Reshape & output
         keras.layers.Reshape((30, 5)),
 
-        keras.layers.Lambda(build_pred_img)
+#        keras.layers.Lambda(build_pred_img)
         ])
 
 # Define optimizer
