@@ -25,6 +25,18 @@ import sys
 kernel_sobel_x = tf.constant_initializer(kernels.sobel_x())
 kernel_sobel_y = tf.constant_initializer(kernels.sobel_y())
 
+sess = tf.Session()
+
+
+def build_pred_img(y_pred):
+    y_pred_plhdr = tf.placeholder(tf.float32, shape=(512, 512, 1))
+    y_pred = y_pred_plhdr
+    shape_arr = y_pred.eval(
+        feed_dict={y_pred_plhdr: np.random.rand(512, 512, 1)},
+        session=sess)
+    y_pred_img = OutputImage(512, 512, shape_arr).img[:, :, 0]
+    return K.constant(y_pred_img)
+
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 model = keras.Sequential([
@@ -94,7 +106,9 @@ model = keras.Sequential([
         keras.layers.PReLU(),
 
         # Reshape & output
-        keras.layers.Reshape((30, 5))
+        keras.layers.Reshape((30, 5)),
+
+        keras.layers.Lambda(build_pred_img)
         ])
 
 # Define optimizer
@@ -112,33 +126,27 @@ def scaled_mse(y_true, y_pred):
     w = K.transpose(w)
     return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
 
-
-def get_img_tensor(tensor):
-    ''''''
-    shape_arr_list = K.batch_get_value(tensor)
-    for shape_arr in shape_arr_list:
-        OutputImage
-
-
 def img_to_img(y_true_imgs, y_pred_batch):
     '''Unpack a (5, 30, 5) tensor of batch model outputs
     Create an OutputImage for each
     Compare to the model input, which is already an image'''
-    shape_arr_lst = K.batch_get_value([y_pred_batch])
-    shape_arr_imgs = np.empty(shape=(5, 512, 512))
-    for i, shape_arr in enumerate(shape_arr_lst):
-        shape_arr_imgs[i, :, :] = OutputImage(512, 512, shape_arr).img[:, :, 0]
-    y_pred_imgs = tf.Variable(shape_arr_imgs)
-    return K.mean(math_ops.square(y_true_imgs - y_pred_imgs))
-
+#    shape_arr_lst = K.batch_get_value([y_pred_batch])
+#    shape_arr_imgs = np.empty(shape=(5, 512, 512))
+#    for i, shape_arr in enumerate(shape_arr_lst):
+#        shape_arr_imgs[i, :, :] = OutputImage(512, 512, shape_arr).img[:, :, 0]
+##    y_pred_imgs = tf.Variable(shape_arr_imgs)
+#    y_pred_imgs = tf.constant(0)
+#    return K.mean(math_ops.square(y_true_imgs - y_pred_imgs))
+    return K.mean(math_ops.square(y_true_imgs))
+    
 ## XXX Add the custom loss to the loss dictionary
 #tf.losses.add_loss(scaled_mse)
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss=img_to_img,
-    metrics=[img_to_img])
+    loss='mean_squared_error',
+    metrics=['mean_squared_error'])
 
 
 if (__name__ == '__main__'):
