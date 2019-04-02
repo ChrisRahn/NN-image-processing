@@ -7,7 +7,7 @@ Builds the neural network model
 from matplotlib.pyplot import imread, imshow
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
+#from tensorflow import keras
 import keras.backend as K
 from tensorflow.keras.constraints import min_max_norm, non_neg
 from tensorflow.keras.losses import MeanSquaredError
@@ -17,13 +17,13 @@ import kernels
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
-from keras.layers import MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Dense
 
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 
-model_input = keras.layers.Input(shape=(512, 512, 1), data_format='channels_last')
+model_input = Input(shape=(512, 512, 1))
 
 Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
 Pool2 = MaxPool2D(pool_size=(2, 2))(Pool1)  # (128, 128, 1)
@@ -31,11 +31,11 @@ Pool3 = MaxPool2D(pool_size=(2, 2))(Pool2)  # (64, 64, 1)
 Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
 Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
 
-Conv1 = Conv2D(5, (3, 3), padding='same')(Pool1)  # (256, 256, 5)
-Conv2 = Conv2D(5, (3, 3), padding='same')(Pool2)  # (128, 128, 5)
-Conv3 = Conv2D(5, (3, 3), padding='same')(Pool3)  # (64, 64, 5)
-Conv4 = Conv2D(5, (3, 3), padding='same')(Pool4)  # (32, 32, 5)
-Conv5 = Conv2D(5, (3, 3), padding='same')(Pool5)  # (16, 16, 5)
+Conv1 = Conv2D(5, (3, 3), padding='same', data_format='channels_last')(Pool1)  # (256, 256, 5)
+Conv2 = Conv2D(5, (3, 3), padding='same', data_format='channels_last')(Pool2)  # (128, 128, 5)
+Conv3 = Conv2D(5, (3, 3), padding='same', data_format='channels_last')(Pool3)  # (64, 64, 5)
+Conv4 = Conv2D(5, (3, 3), padding='same', data_format='channels_last')(Pool4)  # (32, 32, 5)
+Conv5 = Conv2D(5, (3, 3), padding='same', data_format='channels_last')(Pool5)  # (16, 16, 5)
 
 BN1 = BatchNormalization(axis=2)(Conv1)
 BN2 = BatchNormalization(axis=2)(Conv2)
@@ -61,11 +61,11 @@ Dense3 = Dense(256)(F3)
 Dense4 = Dense(256)(F4)
 Dense5 = Dense(256)(F5)
 
-Out1 = Dense(5, activation='relu')(Dense1)
-Out2 = Dense(5, activation='relu')(Dense2)
-Out3 = Dense(5, activation='relu')(Dense3)
-Out4 = Dense(5, activation='relu')(Dense4)
-Out5 = Dense(5, activation='relu')(Dense5)
+Out1 = Dense(5, activation='relu', name='Out1')(Dense1)
+Out2 = Dense(5, activation='relu', name='Out2')(Dense2)
+Out3 = Dense(5, activation='relu', name='Out3')(Dense3)
+Out4 = Dense(5, activation='relu', name='Out4')(Dense4)
+Out5 = Dense(5, activation='relu', name='Out5')(Dense5)
 
 model = keras.Model(inputs=model_input, outputs=[Out5, Out4, Out3, Out2, Out1])
 
@@ -104,8 +104,9 @@ weights = {
 model.compile(
     optimizer=optimizer,
     loss=losses,
-    loss_weights=weights,
-    metrics=['mean_absolute_percentage_error'])
+#    loss_weights=weights,
+#    metrics=[mean_absolute_percentage_error]
+    )
 
 if (__name__ == '__main__'):
 #    assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
@@ -136,13 +137,22 @@ if (__name__ == '__main__'):
     OUT_SHAPE = train_y.shape
     # Initialize the training set
 
+    # Output matching
+    training_outs = {
+        'Out5': train_y[:, 0, :, 0],
+        'Out4': train_y[:, 1, :, 0],
+        'Out3': train_y[:, 2, :, 0],
+        'Out2': train_y[:, 3, :, 0],
+        'Out1': train_y[:, 4, :, 0]
+        }
+
     # Fit the model to the training ImageBundle
     model.fit(
         train_X,
-        train_y[:, :, :, 0],
+        training_outs,
         epochs=10,
         verbose=1,
-        batch_size=20)
+        batch_size=10)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
