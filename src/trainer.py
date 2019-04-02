@@ -33,14 +33,14 @@ model = keras.Sequential([
         # ??? Use LocallyConnected2D instead?
         keras.layers.Conv2D(
             input_shape=(512, 512, 1),
-            filters=1,
-            kernel_size=(3, 3),
+            filters=15,
+            kernel_size=(5, 5),
             strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='sigmoid',
-            use_bias=True,
-            kernel_initializer=kernel_sobel_x),
+            activation='relu',
+            use_bias=True),
+#            kernel_initializer=kernel_sobel_x),
             # kernel_constraint=kernel_nonneg),
 #        keras.layers.Conv2D(
 #            filters=1,
@@ -61,32 +61,37 @@ model = keras.Sequential([
 
         keras.layers.Conv2D(
             filters=30,
-            kernel_size=(8, 8),
-            strides=(8, 8),
+            kernel_size=(5, 5),
+            strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='sigmoid',
+            activation='relu',
             use_bias=True),
+
+        # Maxpool the image
+        keras.layers.MaxPool2D(
+            # input_shape=(512, 512, 1),
+            pool_size=2,
+            padding='same',
+            data_format='channels_last'),
 
         # Flatten
         keras.layers.Flatten(),
 
-#        # Basic Dense layer
-#        keras.layers.Dense(
-#            units=15 * 30,  # !!! 30 output shapes per channel
-#            activation=None,
-#            # kernel_constraint=kernel_nonneg,
-#            use_bias=True),
-
         # Basic Dense layer
         keras.layers.Dense(
-            units=5 * 30,  # !!! 30 output shapes per channel
-            activation=None,
+            units=300,
+            activation='relu',
             # kernel_constraint=kernel_nonneg,
             use_bias=True),
 
         # Activation layer
-        keras.layers.PReLU(),
+#        keras.layers.PReLU(),
+
+        # Basic Dense layer
+        keras.layers.Dense(
+            units=150,  # !!! 30 output shapes per channel
+            activation='relu'),
 
         # Reshape & output
         keras.layers.Reshape((30, 5))
@@ -128,7 +133,7 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_03.pkl' # HINT input('What\'s the training set filepath?')
+        TRAINING_SET = '../data/train_set_02.pkl' # HINT input('What\'s the training set filepath?')
         TESTING_SET = '../data/test_set_03.pkl'
         SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
@@ -157,11 +162,6 @@ if (__name__ == '__main__'):
         verbose=1,
         batch_size=5)
 
-    # Model evalutaion
-    print(model.evaluate(
-            test_X,
-            test_y[:, :, :, 0]))
-
     # Write model config to YAML
     model_yaml = model.to_yaml()
     with open('../models/model_config.yaml', 'w') as yaml_file:
@@ -170,3 +170,8 @@ if (__name__ == '__main__'):
     # Save model
     model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
     print('\nModel saved at: %s' % SAVE_PATH)
+
+    # Model evalutaion
+    print(model.evaluate(
+            test_X,
+            test_y[:, :, :, 0]))
