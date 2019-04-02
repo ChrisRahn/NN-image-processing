@@ -19,6 +19,10 @@ import pickle
 import sys
 from keras.layers import MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Dense
 
+
+# TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
+# Note that the first index (the sample index out of the batch) is stripped
+
 model_input = keras.layers.Input(shape=(512, 512, 1), data_format='channels_last')
 
 Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
@@ -65,91 +69,43 @@ Out5 = Dense(5, activation='relu')(Dense5)
 
 model = keras.Model(inputs=model_input, outputs=[Out5, Out4, Out3, Out2, Out1])
 
-
-# TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
-# Note that the first index (the sample index out of the batch) is stripped
-model = keras.Sequential([
-
-        # Convolve the pooled image by the shape kernel(s)
-        # ??? Use LocallyConnected2D instead?
-        keras.layers.Conv2D(
-            input_shape=(512, 512, 1),
-            filters=15,
-            kernel_size=(3, 3),
-            strides=(1, 1),
-            padding='same',
-            data_format='channels_last',
-            activation='sigmoid',
-            use_bias=True),
-
-        # Maxpool the image
-        keras.layers.MaxPool2D(
-            # input_shape=(512, 512, 1),
-            pool_size=2,
-            padding='same',
-            data_format='channels_last'),
-
-        keras.layers.Conv2D(
-            filters=15,
-            kernel_size=(3, 3),
-            strides=(1, 1),
-            padding='same',
-            data_format='channels_last',
-            activation='sigmoid',
-            use_bias=True),
-
-        # Maxpool the image
-        keras.layers.MaxPool2D(
-            # input_shape=(512, 512, 1),
-            pool_size=2,
-            padding='same',
-            data_format='channels_last'),
-
-        # Flatten
-        keras.layers.Flatten(),
-
-        # Basic Dense layer
-        keras.layers.Dense(
-            units=300,
-            activation=None,
-            # kernel_constraint=kernel_nonneg,
-            use_bias=True),
-
-        # Basic Dense layer
-        keras.layers.Dense(
-            units=25,  # !!! 30 output shapes per channel
-            activation='relu'),
-
-        # Activation layer
-        keras.layers.PReLU(),
-
-        # Reshape & output
-        keras.layers.Reshape((5, 5)),
-
-#        keras.layers.Lambda(build_pred_img)
-        ])
-
 # Define optimizer
 optimizer = keras.optimizers.Adadelta()
 
 # Define custom loss function
 
-def scaled_mse(y_true, y_pred):
-    '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
-    x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
-    Scale all to be [0, 1]'''
-    y_pred = ops.convert_to_tensor(y_pred)
-    y_true = math_ops.cast(y_true, y_pred.dtype)
-    w = math_ops.cast(np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]]), y_pred.dtype)
-    w = K.transpose(w)
-    return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
+# ??? def scaled_mse(y_true, y_pred):
+#    '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
+#    x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
+#    Scale all to be [0, 1]'''
+#    y_pred = ops.convert_to_tensor(y_pred)
+#    y_true = math_ops.cast(y_true, y_pred.dtype)
+#    w = math_ops.cast(np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]]), y_pred.dtype)
+#    w = K.transpose(w)
+#    return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
+
+# Define losses
+losses = {
+    'Out5': 'mean_absolute_percentage_error',
+    'Out4': 'mean_absolute_percentage_error',
+    'Out3': 'mean_absolute_percentage_error',
+    'Out2': 'mean_absolute_percentage_error',
+    'Out1': 'mean_absolute_percentage_error'}
+
+# Define loss weights
+weights = {
+    'Out5': 2.00,
+    'Out4': 1.75,
+    'Out3': 1.50,
+    'Out2': 1.25,
+    'Out1': 1.00}
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss='mean_squared_error',
-    metrics=['mean_squared_error'])
-
+    loss=losses,
+    loss_weights=weights,
+    metrics=['mean_absolute_percentage_error'])
 
 if (__name__ == '__main__'):
 #    assert len(sys.argv) == 3, 'Pass me both the training and save filepaths!'
