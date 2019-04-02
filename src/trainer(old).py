@@ -17,54 +17,25 @@ import kernels
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
-from keras.layers import MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Dense
 
-model_input = keras.layers.Input(shape=(512, 512, 1), data_format='channels_last')
+# Define simple Sobel kernels
+# XXX kernel_tri = tf.constant_initializer(kernels.triangle_5())
+# XXX kernel_const = min_max_norm(0.001, None, rate=1, axis=0)
+# XXX kernel_nonneg = non_neg()
+kernel_sobel_x = tf.constant_initializer(kernels.sobel_x())
+kernel_sobel_y = tf.constant_initializer(kernels.sobel_y())
 
-Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
-Pool2 = MaxPool2D(pool_size=(2, 2))(Pool1)  # (128, 128, 1)
-Pool3 = MaxPool2D(pool_size=(2, 2))(Pool2)  # (64, 64, 1)
-Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
-Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
+sess = tf.Session()
 
-Conv1 = Conv2D(5, (3, 3), padding='same')(Pool1)  # (256, 256, 5)
-Conv2 = Conv2D(5, (3, 3), padding='same')(Pool2)  # (128, 128, 5)
-Conv3 = Conv2D(5, (3, 3), padding='same')(Pool3)  # (64, 64, 5)
-Conv4 = Conv2D(5, (3, 3), padding='same')(Pool4)  # (32, 32, 5)
-Conv5 = Conv2D(5, (3, 3), padding='same')(Pool5)  # (16, 16, 5)
 
-BN1 = BatchNormalization(axis=2)(Conv1)
-BN2 = BatchNormalization(axis=2)(Conv2)
-BN3 = BatchNormalization(axis=2)(Conv3)
-BN4 = BatchNormalization(axis=2)(Conv4)
-BN5 = BatchNormalization(axis=2)(Conv5)
-
-Drop1 = Dropout(0.25)(BN1)
-Drop2 = Dropout(0.25)(BN2)
-Drop3 = Dropout(0.25)(BN3)
-Drop4 = Dropout(0.25)(BN4)
-Drop5 = Dropout(0.25)(BN5)
-
-F1 = Flatten()(Drop1)  #
-F2 = Flatten()(Drop2)
-F3 = Flatten()(Drop3)
-F4 = Flatten()(Drop4)
-F5 = Flatten()(Drop5)
-
-Dense1 = Dense(256)(F1)
-Dense2 = Dense(256)(F2)
-Dense3 = Dense(256)(F3)
-Dense4 = Dense(256)(F4)
-Dense5 = Dense(256)(F5)
-
-Out1 = Dense(5, activation='relu')(Dense1)
-Out2 = Dense(5, activation='relu')(Dense2)
-Out3 = Dense(5, activation='relu')(Dense3)
-Out4 = Dense(5, activation='relu')(Dense4)
-Out5 = Dense(5, activation='relu')(Dense5)
-
-model = keras.Model(inputs=model_input, outputs=[Out5, Out4, Out3, Out2, Out1])
-
+def build_pred_img(y_in):
+    y_in_plhdr = tf.placeholder(tf.float32, shape=(30, 5))
+    y_in = y_in_plhdr
+    shape_arr = y_in.eval(
+        feed_dict={y_in_plhdr: np.random.rand(30, 5)},
+        session=sess)
+    y_pred_img = OutputImage(512, 512, shape_arr).img[:, :, 0]
+    return K.variable(y_pred_img)
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
@@ -81,6 +52,17 @@ model = keras.Sequential([
             data_format='channels_last',
             activation='sigmoid',
             use_bias=True),
+#            kernel_initializer=kernel_sobel_x),
+            # kernel_constraint=kernel_nonneg),
+#        keras.layers.Conv2D(
+#            filters=1,
+#            kernel_size=(3, 3),
+#            strides=(1, 1),
+#            padding='same',
+#            data_format='channels_last',
+#            activation='sigmoid',
+#            use_bias=True,
+#            kernel_initializer=kernel_sobel_y),
 
         # Maxpool the image
         keras.layers.MaxPool2D(
@@ -144,6 +126,22 @@ def scaled_mse(y_true, y_pred):
     w = K.transpose(w)
     return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
 
+# XXX def img_to_img(y_true_imgs, y_pred_batch):
+#    '''Unpack a (5, 30, 5) tensor of batch model outputs
+#    Create an OutputImage for each
+#    Compare to the model input, which is already an image'''
+##    shape_arr_lst = K.batch_get_value([y_pred_batch])
+##    shape_arr_imgs = np.empty(shape=(5, 512, 512))
+##    for i, shape_arr in enumerate(shape_arr_lst):
+##        shape_arr_imgs[i, :, :] = OutputImage(512, 512, shape_arr).img[:, :, 0]
+###    y_pred_imgs = tf.Variable(shape_arr_imgs)
+##    y_pred_imgs = tf.constant(0)
+##    return K.mean(math_ops.square(y_true_imgs - y_pred_imgs))
+#    return K.mean(math_ops.square(y_true_imgs))
+    
+## XXX Add the custom loss to the loss dictionary
+#tf.losses.add_loss(scaled_mse)
+
 # Compile the model
 model.compile(
     optimizer=optimizer,
@@ -186,7 +184,7 @@ if (__name__ == '__main__'):
         train_y[:, :, :, 0],
         epochs=10,
         verbose=1,
-        batch_size=20)
+        batch_size=5)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
