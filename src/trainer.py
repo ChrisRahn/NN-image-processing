@@ -14,7 +14,7 @@ from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 import kernels
-from artist import CustomImage, ImageBundle
+from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
 
@@ -113,14 +113,32 @@ def scaled_mse(y_true, y_pred):
     return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
 
 
+def get_img_tensor(tensor):
+    ''''''
+    shape_arr_list = K.batch_get_value(tensor)
+    for shape_arr in shape_arr_list:
+        OutputImage
+
+
+def img_to_img(y_true_imgs, y_pred_batch):
+    '''Unpack a (5, 30, 5) tensor of batch model outputs
+    Create an OutputImage for each
+    Compare to the model input, which is already an image'''
+    shape_arr_lst = K.batch_get_value([y_pred_batch])
+    shape_arr_imgs = np.empty(shape=(5, 512, 512))
+    for i, shape_arr in enumerate(shape_arr_lst):
+        shape_arr_imgs[i, :, :] = OutputImage(512, 512, shape_arr).img[:, :, 0]
+    y_pred_imgs = tf.Variable(shape_arr_imgs)
+    return K.mean(math_ops.square(y_true_imgs - y_pred_imgs))
+
 ## XXX Add the custom loss to the loss dictionary
 #tf.losses.add_loss(scaled_mse)
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss=scaled_mse,
-    metrics=[scaled_mse])
+    loss=img_to_img,
+    metrics=[img_to_img])
 
 
 if (__name__ == '__main__'):
@@ -131,20 +149,20 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_02.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_03.pkl'
+        TRAINING_SET = '../data/train_set_04.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_04.pkl'
         SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
     train_bundle = pickle.load(open(TRAINING_SET, 'rb'))
     train_X = train_bundle.images
-    train_y = train_bundle.tri_list
+    train_y = train_bundle.images
 
     # Load the testing set from the pickled ImageBundle
     test_bundle = pickle.load(open(TESTING_SET, 'rb'))
     test_X = test_bundle.images
-    test_y = test_bundle.tri_list
+    test_y = test_bundle.images
 
     # IN: (samples, rows, cols, channels)
     IN_SHAPE = train_X.shape
@@ -155,7 +173,7 @@ if (__name__ == '__main__'):
     # Fit the model to the training ImageBundle
     model.fit(
         train_X,
-        train_y[:, :, :, 0],
+        train_y,
         epochs=10,
         verbose=1,
         batch_size=5)
