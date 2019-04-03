@@ -19,68 +19,42 @@ import pickle
 import sys
 from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda, LeakyReLU
 
-
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 
 model_input = Input(shape=(512, 512, 1))
 
-Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
-Pool2 = MaxPool2D(pool_size=(2, 2))(Pool1)  # (128, 128, 1)
-Pool3 = MaxPool2D(pool_size=(2, 2))(Pool2)  # (64, 64, 1)
-Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
-Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
+Lambda_In = Lambda(lambda x: x/255.)(model_input)
+#Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
+Pool2 = MaxPool2D(pool_size=(8, 8))(Lambda_In)  # (164, 64, 1)
+#Pool3 = MaxPool2D(pool_size=(2, 2))(Pool2)  # (64, 64, 1)
+#Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
+#Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
 
-#Conv1 = Conv2D(30, (3, 3), padding='same', data_format='channels_last')(Pool1)  # (256, 256, 5)
-Conv21 = Conv2D(30, (3, 3), padding='same', data_format='channels_last')(Pool2)  # (128, 128, 5)
-#Conv3 = Conv2D(30, (3, 3), padding='same', data_format='channels_last')(Pool3)  # (64, 64, 5)
-#Conv4 = Conv2D(30, (3, 3), padding='same', data_format='channels_last')(Pool4)  # (32, 32, 5)
-#Conv5 = Conv2D(30, (3, 3), padding='same', data_format='channels_last')(Pool5)  # (16, 16, 5)
-
-#BN1 = BatchNormalization(axis=2)(Conv1)
-BN21 = BatchNormalization(axis=2)(Conv21)
-Conv22 = Conv2D(30, (5, 5), padding='same', data_format='channels_last')(BN21)
-BN22 = BatchNormalization(axis=2)(Conv22)
-#BN3 = BatchNormalization(axis=2)(Conv3)
-#BN4 = BatchNormalization(axis=2)(Conv4)
-#BN5 = BatchNormalization(axis=2)(Conv5)
-
+Conv21 = Conv2D(64, (3, 3), padding='same', data_format='channels_last')(Pool2)  # (128, 128, 30)
+Activ_21 = Activation('sigmoid')(Conv21)
+BN21 = BatchNormalization(axis=2)(Activ_21)
 Drop21 = Dropout(0.1)(BN21)
+
+Conv22 = Conv2D(64, (5, 5), padding='same', data_format='channels_last')(Drop21)
+Activ_22 = Activation('sigmoid')(Conv22)
+BN22 = BatchNormalization(axis=2)(Conv22)
 Drop22 = Dropout(0.1)(BN22)
-#Drop1 = Dropout(0.1)(BN1)
-#Drop2 = Dropout(0.1)(BN2)
-#Drop3 = Dropout(0.1)(BN3)
-#Drop4 = Dropout(0.1)(BN4)
-#Drop5 = Dropout(0.1)(BN5)
 
-Flatten21 = Flatten()(Drop21)
 Flatten22 = Flatten()(Drop22)
-#F1 = Flatten()(Drop1)
-#F2 = Flatten()(Drop2)
-#F3 = Flatten()(Drop3)
-#F4 = Flatten()(Drop4)
-#F5 = Flatten()(Drop5)
+#Conc = Concatenate(axis=-1)([Flatten21, Flatten22])
 
-Conc = Concatenate(axis=-1)([Flatten21, Flatten22])
-#Conc_Pos = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
-#Conc_Siz = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
-#Conc_Rot = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
+Dense2_Pos = Dense(30*2)(Flatten22)
+Dense2_Siz = Dense(30*2)(Flatten22)
+Dense2_Rot = Dense(30*1)(Flatten22)
 
-#Dense1_Pos = Dense(60)(Conc)
-#Dense1_Siz = Dense(60)(Conc)
-#Dense1_Rot = Dense(60)(Conc)
+Activ_Pos = Activation('tanh')(Dense2_Pos)
+Activ_Siz = Activation('tanh')(Dense2_Siz)
+Activ_Rot = Activation('tanh')(Dense2_Rot)
 
-Dense2_Pos = Dense(30*2)(Conc)
-Dense2_Siz = Dense(30*2)(Conc)
-Dense2_Rot = Dense(30*1)(Conc)
-
-Activ_Pos = LeakyReLU(alpha=0.3)(Dense2_Pos)
-Activ_Siz = LeakyReLU(alpha=0.3)(Dense2_Siz)
-Activ_Rot = LeakyReLU(alpha=0.3)(Dense2_Rot)
-
-Lambda_Pos = Lambda(lambda x: 512*x)(Activ_Pos)
-Lambda_Siz = Lambda(lambda x: 4*x)(Activ_Siz)
-Lambda_Rot = Lambda(lambda x: 6.28*x)(Activ_Rot)
+Lambda_Pos = Lambda(lambda x: 256*(x + 1))(Activ_Pos)
+Lambda_Siz = Lambda(lambda x: 2*(x + 1))(Activ_Siz)
+Lambda_Rot = Lambda(lambda x: 3.14*(x + 1))(Activ_Rot)
 
 Out_Pos = Reshape((30, 2), name='Position')(Lambda_Pos)
 Out_Siz = Reshape((30, 2), name='Size')(Lambda_Siz)
