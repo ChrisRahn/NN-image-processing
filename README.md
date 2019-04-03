@@ -41,8 +41,7 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Re-do loss function to invoke the output drawing methods, then compare result to input image
-- Test different conv. kernel initializers (Sobel?)
+- Model each shape attribute as a different output & separate loss functions
 - Handling for differently sized images (currently 512x512 px only)
 - Sort out RGB channel handling
 - Enforce more consistent filename I/O

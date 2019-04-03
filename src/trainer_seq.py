@@ -77,7 +77,7 @@ model = keras.Sequential([
             strides=(1, 1),
             padding='same',
             data_format='channels_last',
-            activation='sigmoid',
+            #activation='sigmoid',
             use_bias=True),
 
         # Maxpool the image
@@ -93,20 +93,21 @@ model = keras.Sequential([
         # Basic Dense layer
         keras.layers.Dense(
             units=300,
-            activation=None,
+            #activation=None,
             # kernel_constraint=kernel_nonneg,
             use_bias=True),
 
         # Basic Dense layer
         keras.layers.Dense(
-            units=25,  # !!! 30 output shapes per channel
-            activation='relu'),
+            units=30*5,  # !!! 30 output shapes per channel
+            #activation='relu'
+            ),
 
         # Activation layer
-        keras.layers.PReLU(),
+       # keras.layers.PReLU(),
 
         # Reshape & output
-        keras.layers.Reshape((5, 5)),
+        keras.layers.Reshape((30, 5)),
 
 #        keras.layers.Lambda(build_pred_img)
         ])
@@ -145,8 +146,8 @@ def scaled_mse(y_true, y_pred):
 # Compile the model
 model.compile(
     optimizer=optimizer,
-    loss='mean_squared_error',
-    metrics=['mean_squared_error'])
+    loss='mean_absolute_percentage_error',
+    metrics=['mean_absolute_percentage_error'])
 
 
 if (__name__ == '__main__'):
@@ -157,9 +158,9 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_04.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_04.pkl'
-        SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_seq.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_seq.pkl'
+        SAVE_PATH = '../models/saved_model_seq.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
@@ -182,9 +183,9 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         train_y[:, :, :, 0],
-        epochs=10,
+        epochs=15,
         verbose=1,
-        batch_size=5)
+        batch_size=20)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()

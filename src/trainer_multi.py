@@ -61,11 +61,11 @@ Dense3 = Dense(256)(F3)
 Dense4 = Dense(256)(F4)
 Dense5 = Dense(256)(F5)
 
-Out1 = Dense(5, activation='relu', name='Out1')(Dense1)
-Out2 = Dense(5, activation='relu', name='Out2')(Dense2)
-Out3 = Dense(5, activation='relu', name='Out3')(Dense3)
-Out4 = Dense(5, activation='relu', name='Out4')(Dense4)
-Out5 = Dense(5, activation='relu', name='Out5')(Dense5)
+Out1 = Dense(5, name='Out1')(Dense1)
+Out2 = Dense(5, name='Out2')(Dense2)
+Out3 = Dense(5, name='Out3')(Dense3)
+Out4 = Dense(5, name='Out4')(Dense4)
+Out5 = Dense(5, name='Out5')(Dense5)
 
 model = keras.Model(inputs=model_input, outputs=[Out5, Out4, Out3, Out2, Out1])
 
@@ -149,9 +149,9 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=10,
+        epochs=15,
         verbose=1,
-        batch_size=10)
+        batch_size=20)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
