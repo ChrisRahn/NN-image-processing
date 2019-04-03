@@ -17,7 +17,7 @@ import kernels
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
-from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense
+from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape
 
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
@@ -55,15 +55,19 @@ F3 = Flatten()(Drop3)
 F4 = Flatten()(Drop4)
 F5 = Flatten()(Drop5)
 
-Conc = Concatenate(axis=-1)([Drop1, Drop2, Drop3, Drop4, Drop5])
+Conc = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
 
-Dense_Pos = Dense(1000)(Conc)
-Dense_Siz = Dense(1000)(Conc)
-Dense_Rot = Dense(1000)(Conc)
+Dense1_Pos = Dense(500)(Conc)
+Dense1_Siz = Dense(500)(Conc)
+Dense1_Rot = Dense(500)(Conc)
 
-Out_Pos = Dense(2, name='Position')(Dense_Pos)
-Out_Siz = Dense(2, name='Size')(Dense_Siz)
-Out_Rot = Dense(1, name='Rotation')(Dense_Rot)
+Dense2_Pos = Dense(30*2)(Dense1_Pos)
+Dense2_Siz = Dense(30*2)(Dense1_Siz)
+Dense2_Rot = Dense(30*1)(Dense1_Rot)
+
+Out_Pos = Reshape((30, 2), name='Position')(Dense2_Pos)
+Out_Siz = Reshape((30, 2), name='Size')(Dense2_Siz)
+Out_Rot = Reshape((30,), name='Rotation')(Dense2_Rot)
 
 model = keras.Model(inputs=model_input, outputs=[Out_Pos, Out_Siz, Out_Rot])
 
@@ -133,9 +137,9 @@ if (__name__ == '__main__'):
 
     # Output matching
     training_outs = {
-        'Position': train_y[:, :, :2, 0],
-        'Size': train_y[:, :, 3:5, 0],
-        'Rotation': train_y[:, :, 5, 0]}
+        'Position': train_y[:, :, :1, 0],
+        'Size': train_y[:, :, 2:4, 0],
+        'Rotation': train_y[:, :, 4, 0]}
 
     # Fit the model to the training ImageBundle
     model.fit(
@@ -156,9 +160,9 @@ if (__name__ == '__main__'):
 
     # Model evalutaion
     testing_outs = {
-        'Position': test_y[:, :, :2, 0],
-        'Size': test_y[:, :, 3:5, 0],
-        'Rotation': test_y[:, :, 5, 0]}
+        'Position': test_y[:, :, :1, 0],
+        'Size': test_y[:, :, 2:4, 0],
+        'Rotation': test_y[:, :, 4, 0]}
 
     print(model.evaluate(
             test_X,
