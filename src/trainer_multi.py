@@ -49,7 +49,7 @@ Drop3 = Dropout(0.1)(BN3)
 Drop4 = Dropout(0.1)(BN4)
 Drop5 = Dropout(0.1)(BN5)
 
-F1 = Flatten()(Drop1)  #
+F1 = Flatten()(Drop1)
 F2 = Flatten()(Drop2)
 F3 = Flatten()(Drop3)
 F4 = Flatten()(Drop4)
@@ -57,25 +57,25 @@ F5 = Flatten()(Drop5)
 
 Conc = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
 
-Dense1_Pos = Dense(60)(Conc)
-Dense1_Siz = Dense(60)(Conc)
-Dense1_Rot = Dense(30)(Conc)
+Dense1_Pos = Dense(100)(Conc)
+Dense1_Siz = Dense(100)(Conc)
+Dense1_Rot = Dense(100)(Conc)
 
 Dense2_Pos = Dense(30*2)(Dense1_Pos)
 Dense2_Siz = Dense(30*2)(Dense1_Siz)
 Dense2_Rot = Dense(30*1)(Dense1_Rot)
 
-Activ_Pos = Activation('sigmoid')(Dense2_Pos)
-Activ_Siz = Activation('sigmoid')(Dense2_Siz)
-Activ_Rot = Activation('sigmoid')(Dense2_Rot)
+#Activ_Pos = Activation('relu')(Dense2_Pos)
+#Activ_Siz = Activation('relu')(Dense2_Siz)
+#Activ_Rot = Activation('relu')(Dense2_Rot)
 
-Lambda_Pos = Lambda(lambda x: 512*x)(Activ_Pos)
-Lambda_Siz = Lambda(lambda x: 4*x)(Activ_Siz)
-Lambda_Rot = Lambda(lambda x: 6.28*x)(Activ_Rot)
+#Lambda_Pos = Lambda(lambda x: 512*x)(Dense2_Pos)
+#Lambda_Siz = Lambda(lambda x: 4*x)(Dense2_Siz)
+#Lambda_Rot = Lambda(lambda x: 6.28*x)(Dense2_Rot)
 
-Out_Pos = Reshape((30, 2), name='Position')(Lambda_Pos)
-Out_Siz = Reshape((30, 2), name='Size')(Lambda_Siz)
-Out_Rot = Reshape((30,), name='Rotation')(Lambda_Rot)
+Out_Pos = Reshape((30, 2), name='Position')(Dense2_Pos)
+Out_Siz = Reshape((30, 2), name='Size')(Dense2_Siz)
+Out_Rot = Reshape((30,), name='Rotation')(Dense2_Rot)
 
 model = keras.Model(inputs=model_input, outputs=[Out_Pos, Out_Siz, Out_Rot])
 
@@ -102,9 +102,9 @@ losses = {
 
 # Define loss weights
 weights = {
-    'Position': 1,
-    'Size': 1,
-    'Rotation': 1}
+    'Position': 1/512,
+    'Size': 1/4,
+    'Rotation': 1/6.28}
 
 # Compile the model
 model.compile(
