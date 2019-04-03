@@ -143,8 +143,7 @@ if (__name__ == '__main__'):
         'Out4': train_y[:, 1, :, 0],
         'Out3': train_y[:, 2, :, 0],
         'Out2': train_y[:, 3, :, 0],
-        'Out1': train_y[:, 4, :, 0]
-        }
+        'Out1': train_y[:, 4, :, 0]}
 
     # Fit the model to the training ImageBundle
     model.fit(
@@ -164,6 +163,13 @@ if (__name__ == '__main__'):
     print('\nModel saved at: %s' % SAVE_PATH)
 
     # Model evalutaion
+    testing_outs = {
+        'Out5': test_y[:, 0, :, 0],
+        'Out4': test_y[:, 1, :, 0],
+        'Out3': test_y[:, 2, :, 0],
+        'Out2': test_y[:, 3, :, 0],
+        'Out1': test_y[:, 4, :, 0]}
+
     print(model.evaluate(
             test_X,
-            test_y[:, :, :, 0]))
+            testing_outs))
