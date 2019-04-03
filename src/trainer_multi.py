@@ -17,7 +17,7 @@ import kernels
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
-from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape
+from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda
 
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
@@ -57,17 +57,25 @@ F5 = Flatten()(Drop5)
 
 Conc = Concatenate(axis=-1)([F1, F2, F3, F4, F5])
 
-Dense1_Pos = Dense(500)(Conc)
-Dense1_Siz = Dense(500)(Conc)
-Dense1_Rot = Dense(500)(Conc)
+Dense1_Pos = Dense(60)(Conc)
+Dense1_Siz = Dense(60)(Conc)
+Dense1_Rot = Dense(30)(Conc)
 
 Dense2_Pos = Dense(30*2)(Dense1_Pos)
 Dense2_Siz = Dense(30*2)(Dense1_Siz)
 Dense2_Rot = Dense(30*1)(Dense1_Rot)
 
-Out_Pos = Reshape((30, 2), name='Position')(Dense2_Pos)
-Out_Siz = Reshape((30, 2), name='Size')(Dense2_Siz)
-Out_Rot = Reshape((30,), name='Rotation')(Dense2_Rot)
+Activ_Pos = Activation('sigmoid')(Dense2_Pos)
+Activ_Siz = Activation('sigmoid')(Dense2_Siz)
+Activ_Rot = Activation('sigmoid')(Dense2_Rot)
+
+Lambda_Pos = Lambda(lambda x: 512*x)(Activ_Pos)
+Lambda_Siz = Lambda(lambda x: 4*x)(Activ_Siz)
+Lambda_Rot = Lambda(lambda x: 6.28*x)(Activ_Rot)
+
+Out_Pos = Reshape((30, 2), name='Position')(Lambda_Pos)
+Out_Siz = Reshape((30, 2), name='Size')(Lambda_Siz)
+Out_Rot = Reshape((30,), name='Rotation')(Lambda_Rot)
 
 model = keras.Model(inputs=model_input, outputs=[Out_Pos, Out_Siz, Out_Rot])
 
@@ -94,9 +102,9 @@ losses = {
 
 # Define loss weights
 weights = {
-    'Position': 1.00,
-    'Size': 125.00,
-    'Rotation': 80.00}
+    'Position': 1,
+    'Size': 1,
+    'Rotation': 1}
 
 # Compile the model
 model.compile(
