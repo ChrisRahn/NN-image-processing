@@ -43,11 +43,11 @@ BN3 = BatchNormalization(axis=2)(Conv3)
 BN4 = BatchNormalization(axis=2)(Conv4)
 BN5 = BatchNormalization(axis=2)(Conv5)
 
-Drop1 = Dropout(0.25)(BN1)
-Drop2 = Dropout(0.25)(BN2)
-Drop3 = Dropout(0.25)(BN3)
-Drop4 = Dropout(0.25)(BN4)
-Drop5 = Dropout(0.25)(BN5)
+Drop1 = Dropout(0.1)(BN1)
+Drop2 = Dropout(0.1)(BN2)
+Drop3 = Dropout(0.1)(BN3)
+Drop4 = Dropout(0.1)(BN4)
+Drop5 = Dropout(0.1)(BN5)
 
 F1 = Flatten()(Drop1)  #
 F2 = Flatten()(Drop2)
@@ -116,9 +116,9 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_04.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_04.pkl'
-        SAVE_PATH = '../models/saved_model_04.h5' # HINT input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_05.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_05.pkl'
+        SAVE_PATH = '../models/saved_model_05.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
