@@ -7,6 +7,7 @@ import sys
 from tensorflow import keras
 from artist import InputImage, OutputImage
 from trainer import scaled_mse
+import numpy as np
 
 if (__name__ == '__main__'):
     # ??? assert len(sys.argv) == 2, 'Gotta give me a JPEG to predict!'
@@ -14,23 +15,31 @@ if (__name__ == '__main__'):
     try:
         IMAGE_PATH = sys.argv[1]
     except IndexError:
-        IMAGE_PATH = '../data/triforce.jpg'
+        IMAGE_PATH = input('Which image should I match?')
 
     try:
         NUM_SHAPES = int(sys.argv[2])
     except IndexError:
-        NUM_SHAPES = 10
+        NUM_SHAPES = input('How many shapes do you want?')
 
     MODEL_PATH = input('Which saved model should I use?')
-    model = keras.models.load_model(MODEL_PATH,
-                                    custom_objects={'scaled_mse': scaled_mse})
+    model = keras.models.load_model(
+        MODEL_PATH
+#        custom_objects={'scaled_mse': scaled_mse}
+        )
 
     # Read in the passed image
     img_in = InputImage(IMAGE_PATH)
 
     # Reshape to a 1-page batch and feed through model
     model_feed = img_in.data.reshape(1, 512, 512, 1)  # TODO Allow sizes
-    shapes_out = model.predict(model_feed)[0, :, :]
+    model_out = model.predict(model_feed)  # [2xpos, 2xsiz, 1xrot]
+
+    # Concatenate model outputs to one array
+    pred_pos = model_out[0][0, :, :]  # 30x2 position array
+    pred_siz = model_out[1][0, :, :]  # 30x2 size array
+    pred_rot = model_out[2][0, :].reshape(30, 1)  # 30x1 rotation array
+    shapes_out = np.hstack((pred_pos, pred_siz, pred_rot))
 
     # Filter to the number of shapes desired (NUM_SHAPES)
     print(NUM_SHAPES)
