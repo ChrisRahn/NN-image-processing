@@ -7,7 +7,7 @@ Builds the neural network model
 from matplotlib.pyplot import imread, imshow
 import numpy as np
 import tensorflow as tf
-#from tensorflow import keras
+from tensorflow import keras
 import keras.backend as K
 from tensorflow.keras.constraints import min_max_norm, non_neg
 from tensorflow.keras.losses import MeanSquaredError
@@ -17,7 +17,7 @@ import kernels
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
-from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense
 
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
@@ -55,19 +55,17 @@ F3 = Flatten()(Drop3)
 F4 = Flatten()(Drop4)
 F5 = Flatten()(Drop5)
 
-Dense1 = Dense(256)(F1)
-Dense2 = Dense(256)(F2)
-Dense3 = Dense(256)(F3)
-Dense4 = Dense(256)(F4)
-Dense5 = Dense(256)(F5)
+Conc = Concatenate(axis=-1)([Drop1, Drop2, Drop3, Drop4, Drop5])
 
-Out1 = Dense(5, name='Out1')(Dense1)
-Out2 = Dense(5, name='Out2')(Dense2)
-Out3 = Dense(5, name='Out3')(Dense3)
-Out4 = Dense(5, name='Out4')(Dense4)
-Out5 = Dense(5, name='Out5')(Dense5)
+Dense_Pos = Dense(1000)(Conc)
+Dense_Siz = Dense(1000)(Conc)
+Dense_Rot = Dense(1000)(Conc)
 
-model = keras.Model(inputs=model_input, outputs=[Out5, Out4, Out3, Out2, Out1])
+Out_Pos = Dense(2, name='Position')(Dense_Pos)
+Out_Siz = Dense(2, name='Size')(Dense_Siz)
+Out_Rot = Dense(1, name='Rotation')(Dense_Rot)
+
+model = keras.Model(inputs=model_input, outputs=[Out_Pos, Out_Siz, Out_Rot])
 
 # Define optimizer
 optimizer = keras.optimizers.Adadelta()
@@ -86,26 +84,22 @@ optimizer = keras.optimizers.Adadelta()
 
 # Define losses
 losses = {
-    'Out5': 'mean_absolute_percentage_error',
-    'Out4': 'mean_absolute_percentage_error',
-    'Out3': 'mean_absolute_percentage_error',
-    'Out2': 'mean_absolute_percentage_error',
-    'Out1': 'mean_absolute_percentage_error'}
+    'Position': 'mean_squared_error',
+    'Size': 'mean_squared_error',
+    'Rotation': 'mean_squared_error'}
 
 # Define loss weights
 weights = {
-    'Out5': 2.00,
-    'Out4': 1.75,
-    'Out3': 1.50,
-    'Out2': 1.25,
-    'Out1': 1.00}
+    'Position': 1.00,
+    'Size': 125.00,
+    'Rotation': 80.00}
 
 # Compile the model
 model.compile(
     optimizer=optimizer,
     loss=losses,
-#    loss_weights=weights,
-#    metrics=[mean_absolute_percentage_error]
+    loss_weights=weights,
+    metrics=['mean_squared_error']
     )
 
 if (__name__ == '__main__'):
@@ -116,9 +110,9 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_05.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_05.pkl'
-        SAVE_PATH = '../models/saved_model_05.h5' # HINT input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_multi.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_multi.pkl'
+        SAVE_PATH = '../models/saved_model_multi.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
@@ -139,11 +133,9 @@ if (__name__ == '__main__'):
 
     # Output matching
     training_outs = {
-        'Out5': train_y[:, 0, :, 0],
-        'Out4': train_y[:, 1, :, 0],
-        'Out3': train_y[:, 2, :, 0],
-        'Out2': train_y[:, 3, :, 0],
-        'Out1': train_y[:, 4, :, 0]}
+        'Position': train_y[:, :, :2, 0],
+        'Size': train_y[:, :, 3:5, 0],
+        'Rotation': train_y[:, :, 5, 0]}
 
     # Fit the model to the training ImageBundle
     model.fit(
@@ -164,11 +156,9 @@ if (__name__ == '__main__'):
 
     # Model evalutaion
     testing_outs = {
-        'Out5': test_y[:, 0, :, 0],
-        'Out4': test_y[:, 1, :, 0],
-        'Out3': test_y[:, 2, :, 0],
-        'Out2': test_y[:, 3, :, 0],
-        'Out1': test_y[:, 4, :, 0]}
+        'Position': test_y[:, :, :2, 0],
+        'Size': test_y[:, :, 3:5, 0],
+        'Rotation': test_y[:, :, 5, 0]}
 
     print(model.evaluate(
             test_X,
