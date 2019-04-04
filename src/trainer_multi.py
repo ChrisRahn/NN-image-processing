@@ -46,12 +46,17 @@ Activ23 = Activation('sigmoid')(Conv23)
 BN23 = BatchNormalization(axis=2)(Activ23)
 Drop23 = Dropout(0.1)(BN23)
 
-Flatten23 = Flatten()(Drop23)
+Conv24 = Conv2D(64, (9, 9), padding='same', data_format='channels_last')(Drop23)
+Activ24 = Activation('sigmoid')(Conv24)
+BN24 = BatchNormalization(axis=2)(Activ24)
+Drop24 = Dropout(0.1)(BN24)
+
+Flatten24 = Flatten()(Drop24)
 #Conc = Concatenate(axis=-1)([Flatten21, Flatten22])
 
-Dense2_Pos = Dense(30*2)(Flatten23)
-Dense2_Siz = Dense(30*2)(Flatten23)
-Dense2_Rot = Dense(30*1)(Flatten23)
+Dense2_Pos = Dense(30*2)(Flatten24)
+Dense2_Siz = Dense(30*2)(Flatten24)
+Dense2_Rot = Dense(30*1)(Flatten24)
 
 Activ_Pos = Activation('tanh')(Dense2_Pos)
 Activ_Siz = Activation('tanh')(Dense2_Siz)
