@@ -25,40 +25,47 @@ sobel_x = tf.constant_initializer(sobel_x())
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
 
+# Define the model's layers
 model_input = Input(shape=(512, 512, 1))
 
 Lambda_In = Lambda(lambda x: x/255.)(model_input)
-#Pool1 = MaxPool2D(pool_size=(2, 2))(model_input)  # (256, 256, 1)
-Pool2 = MaxPool2D(pool_size=(8, 8))(Lambda_In)  # (164, 64, 1)
-#Pool3 = MaxPool2D(pool_size=(2, 2))(Pool2)  # (64, 64, 1)
-#Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
-#Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
 
-Conv21 = Conv2D(128, (3, 3), padding='same', kernel_initializer=sobel_x, data_format='channels_last')(Pool2)  # (128, 128, 30)
-Activ21 = Activation('sigmoid')(Conv21)
-BN21 = BatchNormalization(axis=2)(Activ21)
-Drop21 = Dropout(0.1)(BN21)
+Pool = MaxPool2D(pool_size=(2, 2))(Lambda_In)  # (256, 256, 1)
 
-Conv22 = Conv2D(128, (5, 5), padding='same', data_format='channels_last')(Drop21)
-Activ22 = Activation('sigmoid')(Conv22)
-BN22 = BatchNormalization(axis=2)(Activ22)
-Drop22 = Dropout(0.1)(BN22)
+Conv1 = Conv2D(
+    filters=64, kernel_size=(3, 3),
+    padding='same', data_format='channels_last',
+    kernel_initializer=sobel_x)(Pool)
+Activ1 = Activation('sigmoid')(Conv1)
+BN1 = BatchNormalization(axis=2)(Activ1)
+Drop1 = Dropout(0.1)(BN1)
 
-Conv23 = Conv2D(128, (7, 7), padding='same', data_format='channels_last')(Drop22)
-Activ23 = Activation('sigmoid')(Conv23)
-BN23 = BatchNormalization(axis=2)(Activ23)
-Drop23 = Dropout(0.1)(BN23)
+Conv2 = Conv2D(
+    filters=64, kernel_size=(5, 5),
+    padding='same', data_format='channels_last')(Drop1)
+Activ2 = Activation('sigmoid')(Conv2)
+BN2 = BatchNormalization(axis=2)(Activ2)
+Drop2 = Dropout(0.1)(BN2)
 
-Conv24 = Conv2D(128, (9, 9), padding='same', data_format='channels_last')(Drop23)
-Activ24 = Activation('sigmoid')(Conv24)
-BN24 = BatchNormalization(axis=2)(Activ24)
-Drop24 = Dropout(0.1)(BN24)
+Conv3 = Conv2D(
+    filters=64, (7, 7), padding='same',
+    data_format='channels_last')(Drop2)
+Activ3 = Activation('sigmoid')(Conv3)
+BN3 = BatchNormalization(axis=2)(Activ3)
+Drop3 = Dropout(0.1)(BN3)
 
-Flatten24 = Flatten()(Drop24)
+Conv4 = Conv2D(
+    filters=64, (9, 9), padding='same',
+    data_format='channels_last')(Drop3)
+Activ4 = Activation('sigmoid')(Conv4)
+BN4 = BatchNormalization(axis=2)(Activ4)
+Drop4 = Dropout(0.1)(BN4)
 
-Dense2_XYs = Dense(30*4)(Flatten24)
+Flatten4 = Flatten()(Drop4)
 
-Activ_XYs = Activation('tanh')(Dense2_XYs)
+Dense_XYs = Dense(30*4)(Flatten4)
+
+Activ_XYs = Activation('tanh')(Dense_XYs)
 
 Lambda_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
 
