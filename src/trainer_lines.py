@@ -30,7 +30,7 @@ model_input = Input(shape=(512, 512, 1))
 
 Lambda_In = Lambda(lambda x: x/255.)(model_input)
 
-Pool = MaxPool2D(pool_size=(2, 2))(Lambda_In)  # (256, 256, 1)
+Pool = MaxPool2D(pool_size=(4, 4))(Lambda_In)  # (256, 256, 1)
 
 Conv1 = Conv2D(
     filters=64, kernel_size=(3, 3),
@@ -41,21 +41,21 @@ BN1 = BatchNormalization(axis=2)(Activ1)
 Drop1 = Dropout(0.1)(BN1)
 
 Conv2 = Conv2D(
-    filters=64, kernel_size=(5, 5),
+    filters=64, kernel_size=(3, 3),
     padding='same', data_format='channels_last')(Drop1)
 Activ2 = Activation('sigmoid')(Conv2)
 BN2 = BatchNormalization(axis=2)(Activ2)
 Drop2 = Dropout(0.1)(BN2)
 
 Conv3 = Conv2D(
-    filters=64, (7, 7), padding='same',
+    filters=64, kernel_size=(5, 5), padding='same',
     data_format='channels_last')(Drop2)
 Activ3 = Activation('sigmoid')(Conv3)
 BN3 = BatchNormalization(axis=2)(Activ3)
 Drop3 = Dropout(0.1)(BN3)
 
 Conv4 = Conv2D(
-    filters=64, (9, 9), padding='same',
+    filters=64, kernel_size=(5, 5), padding='same',
     data_format='channels_last')(Drop3)
 Activ4 = Activation('sigmoid')(Conv4)
 BN4 = BatchNormalization(axis=2)(Activ4)
@@ -67,7 +67,8 @@ Dense_XYs = Dense(30*4)(Flatten4)
 
 Activ_XYs = Activation('tanh')(Dense_XYs)
 
-Lambda_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
+# Clip_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
+Lambda_XYs = Lambda(lambda x: 256*(x + 1))(Activ_XYs)
 
 Out_XYs = Reshape((30, 4), name='XYs_Out')(Lambda_XYs)
 
