@@ -13,11 +13,14 @@ from tensorflow.keras.constraints import min_max_norm, non_neg
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
-import kernels
+from kernels import sobel_x
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
 from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda, LeakyReLU
+
+# Define Sobel filter
+sobel_x = tf.constant_initializer(sobel_x())
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
@@ -31,7 +34,7 @@ Pool2 = MaxPool2D(pool_size=(8, 8))(Lambda_In)  # (164, 64, 1)
 #Pool4 = MaxPool2D(pool_size=(2, 2))(Pool3)  # (32, 32, 1)
 #Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
 
-Conv21 = Conv2D(128, (3, 3), padding='same', data_format='channels_last')(Pool2)  # (128, 128, 30)
+Conv21 = Conv2D(128, (3, 3), padding='same', kernel_initializer=sobel_x, data_format='channels_last')(Pool2)  # (128, 128, 30)
 Activ21 = Activation('sigmoid')(Conv21)
 BN21 = BatchNormalization(axis=2)(Activ21)
 Drop21 = Dropout(0.1)(BN21)
@@ -74,18 +77,6 @@ model = keras.Model(inputs=model_input, outputs=[Out_Pos, Out_Siz, Out_Rot])
 
 # Define optimizer
 optimizer = keras.optimizers.Adadelta()
-
-# Define custom loss function
-
-# ??? def scaled_mse(y_true, y_pred):
-#    '''Loss b/w (30, 5) tensors ([x_pos, y_pos, w_scale, h_scale, rot])
-#    x_pos & y_pos: [0, 512]; w_scale, h_scale: [0.1, 4]; rot: [0, 2*pi]
-#    Scale all to be [0, 1]'''
-#    y_pred = ops.convert_to_tensor(y_pred)
-#    y_true = math_ops.cast(y_true, y_pred.dtype)
-#    w = math_ops.cast(np.array([[1/512, 1/512, 1/4, 1/4, 1/(2*np.pi)]]), y_pred.dtype)
-#    w = K.transpose(w)
-#    return K.mean(math_ops.square(K.dot((y_true - y_pred),w)), axis=-1)
 
 # Define losses
 losses = {
@@ -146,9 +137,9 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=15,
+        epochs=5,
         verbose=1,
-        batch_size=20)
+        batch_size=30)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
