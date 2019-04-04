@@ -32,14 +32,19 @@ Pool2 = MaxPool2D(pool_size=(8, 8))(Lambda_In)  # (164, 64, 1)
 #Pool5 = MaxPool2D(pool_size=(2, 2))(Pool4)  # (16, 16, 1)
 
 Conv21 = Conv2D(64, (3, 3), padding='same', data_format='channels_last')(Pool2)  # (128, 128, 30)
-Activ_21 = Activation('sigmoid')(Conv21)
-BN21 = BatchNormalization(axis=2)(Activ_21)
+Activ21 = Activation('sigmoid')(Conv21)
+BN21 = BatchNormalization(axis=2)(Activ21)
 Drop21 = Dropout(0.1)(BN21)
 
 Conv22 = Conv2D(64, (5, 5), padding='same', data_format='channels_last')(Drop21)
-Activ_22 = Activation('sigmoid')(Conv22)
-BN22 = BatchNormalization(axis=2)(Conv22)
+Activ22 = Activation('sigmoid')(Conv22)
+BN22 = BatchNormalization(axis=2)(Activ22)
 Drop22 = Dropout(0.1)(BN22)
+
+#Conv23 = Conv2D(64, (7, 7), padding='same', data_format='channels_last')(Drop22)
+#Activ23 = Activation('sigmoid')(Conv23)
+#BN23 = BatchNormalization(axis=2)(Activ23)
+#Drop23 = Dropout(0.1)(BN23)
 
 Flatten22 = Flatten()(Drop22)
 #Conc = Concatenate(axis=-1)([Flatten21, Flatten22])
