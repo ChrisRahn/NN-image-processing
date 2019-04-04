@@ -6,7 +6,6 @@ Runs the input image through the neural network model
 import sys
 from tensorflow import keras
 from artist import InputImage, OutputImage
-from trainer import scaled_mse
 import numpy as np
 
 if (__name__ == '__main__'):
@@ -25,7 +24,6 @@ if (__name__ == '__main__'):
     MODEL_PATH = input('Which saved model should I use?')
     model = keras.models.load_model(
         MODEL_PATH
-#        custom_objects={'scaled_mse': scaled_mse}
         )
 
     # Read in the passed image

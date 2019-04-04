@@ -41,7 +41,7 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Model each shape attribute as a different output & separate loss functions
+- Add more convolutional layers to reduce neuron saturation
 - Handling for differently sized images (currently 512x512 px only)
 - Sort out RGB channel handling
 - Enforce more consistent filename I/O
