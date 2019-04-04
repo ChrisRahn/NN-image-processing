@@ -9,26 +9,34 @@ import math
 import cairo
 import pickle
 from PIL import Image
-from matplotlib.pyplot import imshow
 
 
 class ImageBundle():
     '''A collection of randomly-generated CustomImages'''
-    def __init__(self, batch_size, num_tri, width, height):
+    def __init__(self, batch_size, width, height, num_tri=0, num_lines=0):
         # Bundle individual images (array)
         self.images = np.empty((batch_size, height, width, 1))
 
         # Bundle the arrays of triangle info as a separate attribute
         self.tri_list = np.empty((batch_size, num_tri, 5, 1))
+        self.line_list = np.empty((batch_size, num_lines, 4, 1))
+
         for i in range(batch_size):
             new_img = CustomImage(width, height)
-            new_img.rand_tri(num_tri)
+            if num_tri:
+                new_img.rand_tri(num_tri)
+                self.tri_list[i, :, :, 0] = new_img.triangles[:, :]
+                # Reorder tri_list from largest to smallest (by w_scale*h_scale)
+                areas = self.tri_list[i, :, 2, 0] * self.tri_list[i, :, 3, 0]
+                sorted_areas = self.tri_list[i, np.argsort(areas)[-1::-1], :, 0]
+                self.tri_list[i, :, :, 0] = sorted_areas
+
+            if num_lines:
+                new_img.rand_line(num_lines)
+                self.line_list[i, :, :, 0] = new_img.lines[:, :]
+
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
-            self.tri_list[i, :, :, 0] = new_img.triangles[:, :]
-            # Reorder tri_list from largest to smallest (by w_scale*h_scale)
-            areas = self.tri_list[i, :, 2, 0] * self.tri_list[i, :, 3, 0]
-            sorted_areas = self.tri_list[i, np.argsort(areas)[-1::-1], :, 0]
-            self.tri_list[i, :, :, 0] = sorted_areas
+
 
     def save(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
@@ -39,12 +47,12 @@ class CustomImage():
     IN: image width=512px, image height=512px'''
     def __init__(self, width=512, height=512):
         self.WIDTH, self.HEIGHT = width, height
-        # Create empty shapelist
-        # Each row repr one shape with [pos_x, pos_y, w_scale, h_scale, rot]
-        self.triangles = None
 
-        # ??? Store a separate array of shape types?
-        # self.shape_types = ...
+        # Array of triangles will be like [pos_x, pos_y, w_scale, h_scale, rot]
+        self.triangles = None
+        
+        # Array of line segments will be like [x1, y1, x2, y2]
+        self.lines = None
 
         # Initialize an array of white RGBA values (4 channel)
         self.img = np.zeros((self.HEIGHT, self.WIDTH, 4), dtype=np.uint8)
@@ -99,6 +107,27 @@ class CustomImage():
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
+    def draw_line(self, x1, y1, x2, y2, alpha=0.5):
+        ctx = self.ctx
+        ctx.identity_matrix()  # Reset drawing transformatione
+        ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
+        ctx.set_line_width(8.0)  # Line width
+        ctx.move_to(x1, y1)
+        ctx.line_to(x2, y2)
+        ctx.stroke()
+
+    def rand_line(self, num_lines):
+        WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
+        self.lines = np.empty((num_lines, 4))
+
+        for i in range(num_lines):
+            # Randomize drawing params
+            x1, x2 = np.random.randint(0, WIDTH, size=2)
+            y1, y2 = np.random.randint(0, HEIGHT, size=2)
+
+            self.draw_line(x1, y1, x2, y2, alpha=0.5)
+            self.lines[i, :] = [x1, y1, x2, y2]
+
     def display(self):
         ''' Use PIL to show the image'''
         with Image.fromarray(self.img, mode='RGBA') as out:
@@ -140,9 +169,10 @@ class InputImage(CustomImage):
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
     IN: image width, image height, ?x5 NumPy array of triangle data'''
-    def __init__(self, width, height, triangles):
+    def __init__(self, width, height, triangles=None, lines=None):
         super().__init__(width, height)
         self.triangles = triangles
+        self.lines = lines
         self.update()
 
     def update(self):
@@ -153,19 +183,23 @@ class OutputImage(CustomImage):
         self.ctx.paint()
 
         # Draw each triangle stored in the triangle array
-        for triangle in self.triangles:
-            off_x, off_y, w_scale, h_scale, rot = triangle
-            self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
+        if self.triangles is not None:
+            for triangle in self.triangles:
+                off_x, off_y, w_scale, h_scale, rot = triangle
+                self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
 
+        if self.lines is not None:
+            for line in self.lines:
+                x1, y1, x2, y2 = line
+                self.draw_line(x1, x2, y1, y2, alpha=0.5)
 
-
-    
 
 if (__name__ == '__main__'):
     create_bundle_size = int(input('Create how many images?'))
     create_num_tri = int(input('How many triangles per image?'))
+    create_num_lines = int(input('How many lines per image?'))
     create_save_path = input('Path (.pkl) to save to?')
-    new_bundle = ImageBundle(create_bundle_size, create_num_tri, 512, 512)
+    new_bundle = ImageBundle(create_bundle_size, 512, 512, num_tri=create_num_tri, num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
-    OutputImage(512, 512, new_bundle.tri_list[0, :, :, 0]).display()
+    OutputImage(512, 512, lines=new_bundle.line_list[0, :, :, 0]).display()
