@@ -63,7 +63,7 @@ Activ_Siz = Activation('tanh')(Dense2_Siz)
 Activ_Rot = Activation('tanh')(Dense2_Rot)
 
 Lambda_Pos = Lambda(lambda x: 256*(x + 1))(Activ_Pos)
-Lambda_Siz = Lambda(lambda x: 2*(x + 1))(Activ_Siz)
+Lambda_Siz = Lambda(lambda x: K.clip(2*(x + 1), 0.1, None))(Activ_Siz)
 Lambda_Rot = Lambda(lambda x: 3.14*(x + 1))(Activ_Rot)
 
 Out_Pos = Reshape((30, 2), name='Position')(Lambda_Pos)
