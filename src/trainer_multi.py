@@ -90,9 +90,9 @@ losses = {
 
 # Define loss weights
 weights = {
-    'Position': 1/(512**2),
-    'Size': 1/(4**2),
-    'Rotation': 1/(6.28**2)}
+    'Position': 100/(512**2),
+    'Size': 100/(4**2),
+    'Rotation': 100/(6.28**2)}
 
 # Compile the model
 model.compile(
