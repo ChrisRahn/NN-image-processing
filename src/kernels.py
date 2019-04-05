@@ -9,10 +9,12 @@ import keras.backend as K
 # Simple arrays for testing
 
 
-def sobel_x():
-    return np.array([[-1, 0, 1],
-                     [-2, 0, 2],
-                     [-1, 0, 1]])
+def sobel_5x():
+    return np.array([[2, 1, 0, -1, -2],
+                     [2, 1, 0, -1, -2],
+                     [4, 2, 0, -2, -4],
+                     [2, 1, 0, -1, -2],
+                     [2, 1, 0, -1, -2]])
 
 
 def sobel_y():

@@ -13,14 +13,14 @@ from tensorflow.keras.constraints import min_max_norm, non_neg
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
-from kernels import sobel_x
+from kernels import sobel_5x
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
 from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda, LeakyReLU
 
 # Define Sobel filter
-sobel_x = tf.constant_initializer(sobel_x())
+sobel_5x = tf.constant_initializer(sobel_5x())
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
 # Note that the first index (the sample index out of the batch) is stripped
@@ -30,15 +30,19 @@ model_input = Input(shape=(256, 256, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
+Activ_In = Activation('sigmoid')(Lambda_In)
+
 #Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
 #
-#Conv1 = Conv2D(
-#    filters=64, kernel_size=(3, 3),
-#    padding='same', data_format='channels_last',
-#    kernel_initializer=sobel_x)(Lambda_In)
-#Activ1 = Activation('tanh')(Conv1)
-#BN1 = BatchNormalization(axis=3)(Activ1)
-#Drop1 = Dropout(0.1)(BN1)
+Conv1 = Conv2D(
+    filters=2, kernel_size=(5, 5),
+    padding='same', data_format='channels_last',
+    activation='sigmoid',
+    kernel_initializer=sobel_5x
+    )(Activ_In)
+#Activ1 = Activation('sigmoid')(Conv1)
+#BN1 = BatchNormalization(axis=3)(Conv1)
+#Drop1 = Dropout(0.1)(Activ1)
 #
 #Conv2 = Conv2D(
 #    filters=64, kernel_size=(3, 3),
@@ -61,13 +65,11 @@ Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 #BN4 = BatchNormalization(axis=3)(Activ4)
 #Drop4 = Dropout(0.1)(BN4)
 
-Activ_In = Activation('sigmoid')(Lambda_In)
-
-Flatten4 = Flatten()(Activ_In)
+FlattenAll = Flatten()(Conv1)
 
 #BN_In = BatchNormalization(axis=-1)(Flatten4)
 
-Dense_Int = Dense(512, activation='sigmoid')(Flatten4)
+Dense_Int = Dense(512, activation='sigmoid')(FlattenAll)
 
 Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
@@ -123,14 +125,15 @@ if (__name__ == '__main__'):
     # Output matching
     training_outs = {
         'XYs_Out': train_y}
-    
+
     # Fit the model to the training ImageBundle
     model.fit(
         train_X,
         training_outs,
         epochs=20,
         verbose=1,
-        batch_size=10)
+        batch_size=5,
+        validation_split=0.1)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
@@ -143,9 +146,11 @@ if (__name__ == '__main__'):
 
     # Model evalutaion
     testing_outs = {
-        'XYs_Out': train_y}
+        'XYs_Out': test_y}
 
-    print(model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1)))
+    print(train_y[2, :, :, :])
+
+    print(model.predict(train_X[2, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :])
 
     print(model.evaluate(
             test_X,
