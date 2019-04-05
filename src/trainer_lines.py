@@ -30,26 +30,27 @@ model_input = Input(shape=(256, 256, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
-Activ_In = Activation('sigmoid')(Lambda_In)
+Activ_In = Activation('relu')(Lambda_In)
 
 #Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
 #
 Conv1 = Conv2D(
-    filters=2, kernel_size=(5, 5),
+    filters=6, kernel_size=(8, 8),
     padding='same', data_format='channels_last',
-    activation='sigmoid',
+    activation='relu',
     kernel_initializer=sobel_5x
     )(Activ_In)
 #Activ1 = Activation('sigmoid')(Conv1)
 #BN1 = BatchNormalization(axis=3)(Conv1)
-Drop1 = Dropout(0.1)(Conv1)
+#Drop1 = Dropout(0.1)(Conv1)
 #
-#Conv2 = Conv2D(
-#    filters=64, kernel_size=(3, 3),
-#    padding='same', data_format='channels_last')(Drop1)
+Conv2 = Conv2D(
+    filters=6, kernel_size=(8, 8),
+    padding='same', data_format='channels_last',
+    activation='relu')(Conv1)
 #Activ2 = Activation('tanh')(Conv2)
 #BN2 = BatchNormalization(axis=3)(Activ2)
-#Drop2 = Dropout(0.1)(BN2)
+Drop2 = Dropout(0.1)(Conv2)
 #
 #Conv3 = Conv2D(
 #    filters=64, kernel_size=(5, 5), padding='same',
@@ -65,18 +66,18 @@ Drop1 = Dropout(0.1)(Conv1)
 #BN4 = BatchNormalization(axis=3)(Activ4)
 #Drop4 = Dropout(0.1)(BN4)
 
-FlattenAll = Flatten()(Drop1)
+FlattenAll = Flatten()(Drop2)
 
 #BN_In = BatchNormalization(axis=-1)(Flatten4)
 
-Dense_Int = Dense(512, activation='sigmoid')(FlattenAll)
+Dense_Int = Dense(25, activation='relu')(FlattenAll)
 
 Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
 # Clip_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
-Lambda_XYs = Lambda(lambda x: x)(Dense_XYs)
+#Lambda_XYs = Lambda(lambda x: x)(Dense_XYs)
 
-Out_XYs = Reshape((1, 1, 4, 1), name='XYs_Out')(Lambda_XYs)
+Out_XYs = Reshape((1, 1, 4, 1), name='XYs_Out')(Dense_XYs)
 
 model = keras.Model(inputs=model_input, outputs=[Out_XYs])
 
@@ -132,9 +133,9 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=20,
+        epochs=30,
         verbose=1,
-        batch_size=5,
+        batch_size=30,
         validation_split=0.1)
 
     # Write model config to YAML
