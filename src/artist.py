@@ -114,7 +114,7 @@ class CustomImage():
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
-    def draw_line(self, x1, y1, x2, y2, alpha=0.5):
+    def draw_line(self, x1, y1, x2, y2, alpha=1):
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformatione
@@ -132,7 +132,7 @@ class CustomImage():
             x1, x2 = np.random.rand(2)
             y1, y2 = np.random.rand(2)
 
-            self.draw_line(x1, y1, x2, y2, alpha=0.5)
+            self.draw_line(x1, y1, x2, y2, alpha=1)
             self.lines[i, :] = [x1, y1, x2, y2]
 
     def draw_point(self, x1, y1, alpha=1.0):
@@ -218,7 +218,7 @@ class OutputImage(CustomImage):
         if self.lines is not None:
             for line in self.lines:
                 x1, y1, x2, y2 = line
-                self.draw_line(x1, x2, y1, y2, alpha=0.5)
+                self.draw_line(x1, x2, y1, y2, alpha=1)
 
         if self.points is not None:
             for point in self.points:
@@ -234,4 +234,4 @@ if (__name__ == '__main__'):
     new_bundle = ImageBundle(create_bundle_size, 256, 256, num_tri=create_num_tri, num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
-    OutputImage(256, 256, lines=new_bundle.line_list[0, :, :, 0]).display()
+    OutputImage(256, 256, triangles=new_bundle.tri_list[0, :, :, 0], lines=new_bundle.line_list[0, :, :, 0]).display()
