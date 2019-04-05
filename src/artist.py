@@ -131,7 +131,8 @@ class CustomImage():
         for i in range(num_lines):
             # Randomize drawing params
             x1, x2 = np.random.rand(2)
-            y1, y2 = np.random.rand(2)
+            y1 = np.random.rand() / 2  # Upper half of frame
+            y2 = 0.5 + np.random.rand() / 2  # Lower half of frame
 
             self.draw_line(x1, y1, x2, y2, alpha=1)
             self.lines[i, :] = [x1, y1, x2, y2]
@@ -177,7 +178,6 @@ class InputImage(CustomImage):
         img_grey = self.img_in.convert('L')
 
         # Cast into a NumPy array through a Cairo surface
-        # TODO Image is saved as greyscale for now
         barr = bytearray(img_grey.tobytes('raw', 'L'))
         self.surface = cairo.ImageSurface.create_for_data(
             barr,
@@ -237,5 +237,4 @@ if (__name__ == '__main__'):
     print('Here\'s the first of the new images I just created.')
     OutputImage(256, 256,
         triangles=new_bundle.tri_list[0, :, :, 0],
-        lines=new_bundle.line_list[0, :, :, 0],
-        points=new_bundle.point_list[0, :, :, 0]).display()
+        lines=new_bundle.line_list[0, :, :, 0]).display()
