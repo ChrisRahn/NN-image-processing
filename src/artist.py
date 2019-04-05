@@ -13,13 +13,14 @@ from PIL import Image
 
 class ImageBundle():
     '''A collection of randomly-generated CustomImages'''
-    def __init__(self, batch_size, width, height, num_tri=0, num_lines=0):
+    def __init__(self, batch_size, width, height, num_tri=0, num_lines=0, num_points=0):
         # Bundle individual images (array)
         self.images = np.empty((batch_size, height, width, 1))
 
         # Bundle the arrays of triangle info as a separate attribute
         self.tri_list = np.empty((batch_size, num_tri, 5, 1))
         self.line_list = np.empty((batch_size, num_lines, 4, 1))
+        self.point_list = np.empty((batch_size, num_points, 2, 1))
 
         for i in range(batch_size):
             new_img = CustomImage(width, height)
@@ -35,8 +36,11 @@ class ImageBundle():
                 new_img.rand_line(num_lines)
                 self.line_list[i, :, :, 0] = new_img.lines[:, :]
 
-            self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
+            if num_points:
+                new_img.rand_point(num_points)
+                self.point_list[i, :, :, 0] = new_img.points[:, :]
 
+            self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
 
     def save(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
@@ -50,9 +54,12 @@ class CustomImage():
 
         # Array of triangles will be like [pos_x, pos_y, w_scale, h_scale, rot]
         self.triangles = None
-        
+
         # Array of line segments will be like [x1, y1, x2, y2]
         self.lines = None
+
+        # Array of points like [x1, y1]
+        self.points = None
 
         # Initialize an array of white RGBA values (4 channel)
         self.img = np.zeros((self.HEIGHT, self.WIDTH, 4), dtype=np.uint8)
@@ -107,26 +114,45 @@ class CustomImage():
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
-    def draw_line(self, x1, y1, x2, y2, alpha=0.5):
+    def draw_line(self, x1, y1, x2, y2, alpha=0.3):
+        WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformatione
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
-        ctx.set_line_width(8.0)  # Line width
-        ctx.move_to(x1, y1)
-        ctx.line_to(x2, y2)
+        ctx.set_line_width(75.0)  # Line width
+        ctx.move_to(x1*WIDTH, y1*HEIGHT)
+        ctx.line_to(x2*WIDTH, y2*HEIGHT)
         ctx.stroke()
 
     def rand_line(self, num_lines):
-        WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         self.lines = np.empty((num_lines, 4))
 
         for i in range(num_lines):
             # Randomize drawing params
-            x1, x2 = np.random.randint(0, WIDTH, size=2)
-            y1, y2 = np.random.randint(0, HEIGHT, size=2)
+            x1, x2 = np.random.rand(2)
+            y1, y2 = np.random.rand(2)
 
-            self.draw_line(x1, y1, x2, y2, alpha=0.5)
+            self.draw_line(x1, y1, x2, y2, alpha=0.3)
             self.lines[i, :] = [x1, y1, x2, y2]
+
+    def draw_point(self, x1, y1, alpha=1.0):
+        WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
+        ctx = self.ctx
+        ctx.identity_matrix()
+        ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)
+        ctx.rectangle(x1*WIDTH, y1*HEIGHT, 10, 10)
+        ctx.fill()
+
+    def rand_point(self, num_points):
+        self.points = np.empty((num_points), 2)
+
+        for i in range(num_points):
+            # Randomize the drawing params
+            x1 = np.random.rand()
+            y1 = np.random.rand()
+
+        self.draw_point(x1, y1, alpha=1.0)
+        self.points[i, :] = [x1, y1]
 
     def display(self):
         ''' Use PIL to show the image'''
@@ -169,10 +195,11 @@ class InputImage(CustomImage):
 class OutputImage(CustomImage):
     '''A subclass of CustomImage just for displaying model outputs
     IN: image width, image height, ?x5 NumPy array of triangle data'''
-    def __init__(self, width, height, triangles=None, lines=None):
+    def __init__(self, width, height, triangles=None, lines=None, points=None):
         super().__init__(width, height)
         self.triangles = triangles
         self.lines = lines
+        self.points = points
         self.update()
 
     def update(self):
@@ -191,7 +218,12 @@ class OutputImage(CustomImage):
         if self.lines is not None:
             for line in self.lines:
                 x1, y1, x2, y2 = line
-                self.draw_line(x1, x2, y1, y2, alpha=0.5)
+                self.draw_line(x1, x2, y1, y2, alpha=0.3)
+
+        if self.points is not None:
+            for point in self.points:
+                x1, y1 = point
+                self.draw_point(x1, y1, alpha=1.0)
 
 
 if (__name__ == '__main__'):
