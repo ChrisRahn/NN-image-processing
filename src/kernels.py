@@ -6,7 +6,21 @@ Raw kernels
 import numpy as np
 import keras.backend as K
 
-# Simple arrays for testing
+# Simple convolution kernels
+
+
+def outline():
+    return np.array([[-1, -1, -1],
+                     [-1, 8, -1],
+                     [-1, -1, -1]])
+
+
+def outline_big():
+    return np.array([[-2, -2, -2, -2, -2],
+                     [-2, -1, 1, -1, -2],
+                     [-2, 1, 8, 1, -2],
+                     [-2, -1, 1, -1, -2],
+                     [-2, -2, -2, -2, -2]])
 
 
 def sobel_5x():

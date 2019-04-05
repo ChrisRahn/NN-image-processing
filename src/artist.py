@@ -20,7 +20,7 @@ class ImageBundle():
         # Bundle the arrays of triangle info as a separate attribute
         self.tri_list = np.empty((batch_size, num_tri, 5, 1))
         self.line_list = np.empty((batch_size, num_lines, 4, 1))
-        self.point_list = np.empty((batch_size, num_points, 2, 1))
+        self.point_list = np.empty((batch_size, 2*num_lines, 2, 1))
 
         for i in range(batch_size):
             new_img = CustomImage(width, height)
@@ -35,10 +35,11 @@ class ImageBundle():
             if num_lines:
                 new_img.rand_line(num_lines)
                 self.line_list[i, :, :, 0] = new_img.lines[:, :]
+                self.point_list[i, :, :, 0] = new_img.lines[:, :].reshape(2*num_lines, 2)
 
-            if num_points:
-                new_img.rand_point(num_points)
-                self.point_list[i, :, :, 0] = new_img.points[:, :]
+#            if num_points:
+#                new_img.rand_point(num_points)
+#                self.point_list[i, :, :, 0] = new_img.points[:, :]
 
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
 
@@ -117,7 +118,7 @@ class CustomImage():
     def draw_line(self, x1, y1, x2, y2, alpha=1):
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
-        ctx.identity_matrix()  # Reset drawing transformatione
+        ctx.identity_matrix()  # Reset drawing transformation
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
         ctx.set_line_width(6.0)  # Line width
         ctx.move_to(x1*WIDTH, y1*HEIGHT)
@@ -234,4 +235,7 @@ if (__name__ == '__main__'):
     new_bundle = ImageBundle(create_bundle_size, 256, 256, num_tri=create_num_tri, num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
-    OutputImage(256, 256, triangles=new_bundle.tri_list[0, :, :, 0], lines=new_bundle.line_list[0, :, :, 0]).display()
+    OutputImage(256, 256,
+        triangles=new_bundle.tri_list[0, :, :, 0],
+        lines=new_bundle.line_list[0, :, :, 0],
+        points=new_bundle.point_list[0, :, :, 0]).display()

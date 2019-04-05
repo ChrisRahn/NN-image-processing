@@ -44,7 +44,7 @@ if (__name__ == '__main__'):
     print(shapes_filt)
 
     # Wrap the raw output in the OutputImage class
-    img_out = OutputImage(256, 256, lines=shapes_filt)
+    img_out = OutputImage(256, 256, points=shapes_filt)
 
     # Display both the input and output image
     img_in.display()
