@@ -42,7 +42,7 @@ Conv1 = Conv2D(
     )(Activ_In)
 #Activ1 = Activation('sigmoid')(Conv1)
 #BN1 = BatchNormalization(axis=3)(Conv1)
-#Drop1 = Dropout(0.1)(Activ1)
+Drop1 = Dropout(0.1)(Conv1)
 #
 #Conv2 = Conv2D(
 #    filters=64, kernel_size=(3, 3),
@@ -65,7 +65,7 @@ Conv1 = Conv2D(
 #BN4 = BatchNormalization(axis=3)(Activ4)
 #Drop4 = Dropout(0.1)(BN4)
 
-FlattenAll = Flatten()(Conv1)
+FlattenAll = Flatten()(Drop1)
 
 #BN_In = BatchNormalization(axis=-1)(Flatten4)
 
@@ -107,20 +107,22 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_lines.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_lines.pkl'
-        SAVE_PATH = '../models/saved_model_lines.h5' # HINT input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_lines_1.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_lines_1.pkl'
+        SAVE_PATH = '../models/saved_model_lines_1.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
     train_bundle = pickle.load(open(TRAINING_SET, 'rb'))
     train_X = train_bundle.images
     train_y = train_bundle.line_list
+    train_bkgds = train_bundle.tri_list
 
     # Load the testing set from the pickled ImageBundle
     test_bundle = pickle.load(open(TESTING_SET, 'rb'))
     test_X = test_bundle.images
     test_y = test_bundle.line_list
+    test_bkgds = train_bundle.tri_list
 
     # Output matching
     training_outs = {
@@ -148,9 +150,11 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': test_y}
 
-    print(train_y[2, :, :, :])
+    train_in = train_y[0, :, :, :]
+    print(train_in)
 
-    print(model.predict(train_X[2, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :])
+    train_out = model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
+    print(train_out)
 
     print(model.evaluate(
             test_X,
