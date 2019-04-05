@@ -30,53 +30,51 @@ model_input = Input(shape=(512, 512, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
-BN_In = BatchNormalization(axis=3)(Lambda_In)
-
-Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
-
-Conv1 = Conv2D(
-    filters=64, kernel_size=(3, 3),
-    padding='same', data_format='channels_last',
-    kernel_initializer=sobel_x)(Lambda_In)
-Activ1 = Activation('tanh')(Conv1)
-BN1 = BatchNormalization(axis=3)(Activ1)
-Drop1 = Dropout(0.1)(BN1)
-
-Conv2 = Conv2D(
-    filters=64, kernel_size=(3, 3),
-    padding='same', data_format='channels_last')(Drop1)
-Activ2 = Activation('tanh')(Conv2)
-BN2 = BatchNormalization(axis=3)(Activ2)
-Drop2 = Dropout(0.1)(BN2)
-
-Conv3 = Conv2D(
-    filters=64, kernel_size=(5, 5), padding='same',
-    data_format='channels_last')(Drop2)
-Activ3 = Activation('tanh')(Conv3)
-BN3 = BatchNormalization(axis=3)(Activ3)
-Drop3 = Dropout(0.1)(BN3)
-
-Conv4 = Conv2D(
-    filters=64, kernel_size=(5, 5), padding='same',
-    data_format='channels_last')(Drop3)
-Activ4 = Activation('tanh')(Conv4)
-BN4 = BatchNormalization(axis=3)(Activ4)
-Drop4 = Dropout(0.1)(BN4)
+#Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
+#
+#Conv1 = Conv2D(
+#    filters=64, kernel_size=(3, 3),
+#    padding='same', data_format='channels_last',
+#    kernel_initializer=sobel_x)(Lambda_In)
+#Activ1 = Activation('tanh')(Conv1)
+#BN1 = BatchNormalization(axis=3)(Activ1)
+#Drop1 = Dropout(0.1)(BN1)
+#
+#Conv2 = Conv2D(
+#    filters=64, kernel_size=(3, 3),
+#    padding='same', data_format='channels_last')(Drop1)
+#Activ2 = Activation('tanh')(Conv2)
+#BN2 = BatchNormalization(axis=3)(Activ2)
+#Drop2 = Dropout(0.1)(BN2)
+#
+#Conv3 = Conv2D(
+#    filters=64, kernel_size=(5, 5), padding='same',
+#    data_format='channels_last')(Drop2)
+#Activ3 = Activation('tanh')(Conv3)
+#BN3 = BatchNormalization(axis=3)(Activ3)
+#Drop3 = Dropout(0.1)(BN3)
+#
+#Conv4 = Conv2D(
+#    filters=64, kernel_size=(5, 5), padding='same',
+#    data_format='channels_last')(Drop3)
+#Activ4 = Activation('tanh')(Conv4)
+#BN4 = BatchNormalization(axis=3)(Activ4)
+#Drop4 = Dropout(0.1)(BN4)
 
 Activ_In = Activation('sigmoid')(Lambda_In)
 
 Flatten4 = Flatten()(Activ_In)
 
-BN_In = BatchNormalization(axis=-1)(Flatten4)
+#BN_In = BatchNormalization(axis=-1)(Flatten4)
 
 Dense_Int = Dense(512, activation='sigmoid')(Flatten4)
 
 Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
 # Clip_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
-Lambda_XYs = Lambda(lambda x: 0.5*(x + 1))(Dense_XYs)
+Lambda_XYs = Lambda(lambda x: x)(Dense_XYs)
 
-Out_XYs = Reshape((1, 1, 4, 1), name='XYs_Out')(Dense_XYs)
+Out_XYs = Reshape((1, 1, 4, 1), name='XYs_Out')(Lambda_XYs)
 
 model = keras.Model(inputs=model_input, outputs=[Out_XYs])
 
@@ -119,8 +117,8 @@ if (__name__ == '__main__'):
 
     # Load the testing set from the pickled ImageBundle
     test_bundle = pickle.load(open(TESTING_SET, 'rb'))
-    test_X = test_bundle.images[0,:,:,:].reshape(1,512,512,1)
-    test_y = test_bundle.line_list[0,:,:,0].reshape(1, 1, 4, 1)
+    test_X = test_bundle.images
+    test_y = test_bundle.line_list
 
     # Output matching
     training_outs = {
@@ -130,11 +128,9 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=10,
+        epochs=20,
         verbose=1,
         batch_size=1)
-
-    print(model.predict(train_X))
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
@@ -142,19 +138,15 @@ if (__name__ == '__main__'):
         yaml_file.write(model_yaml)
 
     # Save model
-#    model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
-#    print('\nModel saved at: %s' % SAVE_PATH)
+    model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
+    print('\nModel saved at: %s' % SAVE_PATH)
 
     # Model evalutaion
     testing_outs = {
         'XYs_Out': train_y}
-    
-    print(train_X.shape)
-    print(training_outs)
-    print(testing_outs)
 
-    print(model.predict(train_X))
+    print(model.predict(train_X[0, :, :, :].reshape(1, 512, 512, 1)))
 
     print(model.evaluate(
-            train_X,
+            test_X,
             testing_outs))
