@@ -48,8 +48,8 @@ class ImageBundle():
 
 class CustomImage():
     '''A randomly-generated image object used to train the NN model
-    IN: image width=512px, image height=512px'''
-    def __init__(self, width=512, height=512):
+    IN: image width=256px, image height=256px'''
+    def __init__(self, width=256, height=256):
         self.WIDTH, self.HEIGHT = width, height
 
         # Array of triangles will be like [pos_x, pos_y, w_scale, h_scale, rot]
@@ -119,7 +119,7 @@ class CustomImage():
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformatione
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
-        ctx.set_line_width(75.0)  # Line width
+        ctx.set_line_width(25.0)  # Line width
         ctx.move_to(x1*WIDTH, y1*HEIGHT)
         ctx.line_to(x2*WIDTH, y2*HEIGHT)
         ctx.stroke()
@@ -163,7 +163,7 @@ class CustomImage():
 class InputImage(CustomImage):
     '''A object just for handling model inputs
     (__init__() and display() overwritten)
-    IN: A path to a 512x512 JPEG file'''
+    IN: A path to a 256x256 JPEG file'''
 
     def __init__(self, image_path):
         self.img_in = Image.open(image_path)
@@ -181,10 +181,10 @@ class InputImage(CustomImage):
         self.surface = cairo.ImageSurface.create_for_data(
             barr,
             cairo.FORMAT_A8,
-            512, 512)
+            256, 256)
         buff = self.surface.get_data()
         self.data = np.ndarray(
-            shape=(512, 512, 1),
+            shape=(256, 256, 1),
             dtype=np.uint8,
             buffer=buff)
 
@@ -231,7 +231,7 @@ if (__name__ == '__main__'):
     create_num_tri = int(input('How many triangles per image?'))
     create_num_lines = int(input('How many lines per image?'))
     create_save_path = input('Path (.pkl) to save to?')
-    new_bundle = ImageBundle(create_bundle_size, 512, 512, num_tri=create_num_tri, num_lines=create_num_lines)
+    new_bundle = ImageBundle(create_bundle_size, 256, 256, num_tri=create_num_tri, num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
-    OutputImage(512, 512, lines=new_bundle.line_list[0, :, :, 0]).display()
+    OutputImage(256, 256, lines=new_bundle.line_list[0, :, :, 0]).display()

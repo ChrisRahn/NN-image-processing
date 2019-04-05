@@ -26,7 +26,7 @@ sobel_x = tf.constant_initializer(sobel_x())
 # Note that the first index (the sample index out of the batch) is stripped
 
 # Define the model's layers
-model_input = Input(shape=(512, 512, 1))
+model_input = Input(shape=(256, 256, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
@@ -105,7 +105,7 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_line_single.pkl' # HINT input('What\'s the training set filepath?')
+        TRAINING_SET = '../data/train_set_lines.pkl' # HINT input('What\'s the training set filepath?')
         TESTING_SET = '../data/test_set_lines.pkl'
         SAVE_PATH = '../models/saved_model_lines.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
@@ -130,7 +130,7 @@ if (__name__ == '__main__'):
         training_outs,
         epochs=20,
         verbose=1,
-        batch_size=1)
+        batch_size=10)
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
@@ -145,7 +145,7 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': train_y}
 
-    print(model.predict(train_X[0, :, :, :].reshape(1, 512, 512, 1)))
+    print(model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1)))
 
     print(model.evaluate(
             test_X,
