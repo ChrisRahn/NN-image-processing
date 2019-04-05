@@ -28,49 +28,55 @@ sobel_x = tf.constant_initializer(sobel_x())
 # Define the model's layers
 model_input = Input(shape=(512, 512, 1))
 
-Lambda_In = Lambda(lambda x: x/255.)(model_input)
+Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
-Pool = MaxPool2D(pool_size=(4, 4))(Lambda_In)  # (256, 256, 1)
+BN_In = BatchNormalization(axis=3)(Lambda_In)
+
+Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
 
 Conv1 = Conv2D(
     filters=64, kernel_size=(3, 3),
     padding='same', data_format='channels_last',
-    kernel_initializer=sobel_x)(Pool)
-Activ1 = Activation('sigmoid')(Conv1)
-BN1 = BatchNormalization(axis=2)(Activ1)
+    kernel_initializer=sobel_x)(Lambda_In)
+Activ1 = Activation('tanh')(Conv1)
+BN1 = BatchNormalization(axis=3)(Activ1)
 Drop1 = Dropout(0.1)(BN1)
 
 Conv2 = Conv2D(
     filters=64, kernel_size=(3, 3),
     padding='same', data_format='channels_last')(Drop1)
-Activ2 = Activation('sigmoid')(Conv2)
-BN2 = BatchNormalization(axis=2)(Activ2)
+Activ2 = Activation('tanh')(Conv2)
+BN2 = BatchNormalization(axis=3)(Activ2)
 Drop2 = Dropout(0.1)(BN2)
 
 Conv3 = Conv2D(
     filters=64, kernel_size=(5, 5), padding='same',
     data_format='channels_last')(Drop2)
-Activ3 = Activation('sigmoid')(Conv3)
-BN3 = BatchNormalization(axis=2)(Activ3)
+Activ3 = Activation('tanh')(Conv3)
+BN3 = BatchNormalization(axis=3)(Activ3)
 Drop3 = Dropout(0.1)(BN3)
 
 Conv4 = Conv2D(
     filters=64, kernel_size=(5, 5), padding='same',
     data_format='channels_last')(Drop3)
-Activ4 = Activation('sigmoid')(Conv4)
-BN4 = BatchNormalization(axis=2)(Activ4)
+Activ4 = Activation('tanh')(Conv4)
+BN4 = BatchNormalization(axis=3)(Activ4)
 Drop4 = Dropout(0.1)(BN4)
 
-Flatten4 = Flatten()(Drop4)
+Activ_In = Activation('sigmoid')(Lambda_In)
 
-Dense_XYs = Dense(30*4)(Flatten4)
+Flatten4 = Flatten()(Activ_In)
 
-Activ_XYs = Activation('tanh')(Dense_XYs)
+BN_In = BatchNormalization(axis=-1)(Flatten4)
+
+Dense_Int = Dense(512, activation='sigmoid')(Flatten4)
+
+Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
 # Clip_XYs = Lambda(lambda x: K.clip(256*(x + 1), 0, 256))(Activ_XYs)
-Lambda_XYs = Lambda(lambda x: 256*(x + 1))(Activ_XYs)
+Lambda_XYs = Lambda(lambda x: 0.5*(x + 1))(Dense_XYs)
 
-Out_XYs = Reshape((30, 4), name='XYs_Out')(Lambda_XYs)
+Out_XYs = Reshape((1, 1, 4, 1), name='XYs_Out')(Dense_XYs)
 
 model = keras.Model(inputs=model_input, outputs=[Out_XYs])
 
@@ -101,7 +107,7 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_lines.pkl' # HINT input('What\'s the training set filepath?')
+        TRAINING_SET = '../data/train_set_line_single.pkl' # HINT input('What\'s the training set filepath?')
         TESTING_SET = '../data/test_set_lines.pkl'
         SAVE_PATH = '../models/saved_model_lines.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
@@ -113,20 +119,22 @@ if (__name__ == '__main__'):
 
     # Load the testing set from the pickled ImageBundle
     test_bundle = pickle.load(open(TESTING_SET, 'rb'))
-    test_X = test_bundle.images
-    test_y = test_bundle.line_list
+    test_X = test_bundle.images[0,:,:,:].reshape(1,512,512,1)
+    test_y = test_bundle.line_list[0,:,:,0].reshape(1, 1, 4, 1)
 
     # Output matching
     training_outs = {
-        'XYs_Out': train_y[:, :, :, 0]}
-
+        'XYs_Out': train_y}
+    
     # Fit the model to the training ImageBundle
     model.fit(
         train_X,
         training_outs,
-        epochs=5,
+        epochs=10,
         verbose=1,
-        batch_size=20)
+        batch_size=1)
+
+    print(model.predict(train_X))
 
     # Write model config to YAML
     model_yaml = model.to_yaml()
@@ -134,13 +142,19 @@ if (__name__ == '__main__'):
         yaml_file.write(model_yaml)
 
     # Save model
-    model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
-    print('\nModel saved at: %s' % SAVE_PATH)
+#    model.save(SAVE_PATH, overwrite=True, include_optimizer=True)
+#    print('\nModel saved at: %s' % SAVE_PATH)
 
     # Model evalutaion
     testing_outs = {
-        'XYs_Out': test_y[:, :, :, 0]}
+        'XYs_Out': train_y}
+    
+    print(train_X.shape)
+    print(training_outs)
+    print(testing_outs)
+
+    print(model.predict(train_X))
 
     print(model.evaluate(
-            test_X,
+            train_X,
             testing_outs))
