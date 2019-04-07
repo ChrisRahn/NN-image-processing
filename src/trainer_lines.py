@@ -20,6 +20,7 @@ import sys
 from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda, LeakyReLU
 
 # Define Sobel filter
+sobel_5x = tf.constant_initializer(sobel_5x())
 outline_big = tf.constant_initializer(outline_big())
 
 # TensorFlow expects 4D tensors of shape (samples, rows, cols, channels)
@@ -30,24 +31,24 @@ model_input = Input(shape=(256, 256, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
-Activ_In = Activation('relu')(Lambda_In)
+Activ_In = Activation('tanh')(Lambda_In)
 
 #Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
 #
 Conv1 = Conv2D(
-    filters=100, kernel_size=(5, 5),
+    filters=50, kernel_size=(5, 5),
     padding='same', data_format='channels_last',
-    activation='sigmoid',
-    kernel_initializer=outline_big
+    activation='tanh',
+    kernel_initializer=sobel_5x
     )(Activ_In)
 #Activ1 = Activation('sigmoid')(Conv1)
 #BN1 = BatchNormalization(axis=3)(Conv1)
 #Drop1 = Dropout(0.1)(Conv1)
 #
 #Conv2 = Conv2D(
-#    filters=6, kernel_size=(8, 8),
+#    filters=64, kernel_size=(5, 5),
 #    padding='same', data_format='channels_last',
-#    activation='relu')(Conv1)
+#    activation='tanh')(Conv1)
 #Activ2 = Activation('tanh')(Conv2)
 #BN2 = BatchNormalization(axis=3)(Activ2)
 #Drop2 = Dropout(0.1)(Conv2)
@@ -70,7 +71,7 @@ FlattenAll = Flatten()(Conv1)
 
 #BN_In = BatchNormalization(axis=-1)(Flatten4)
 
-Dense_Int = Dense(25, activation='sigmoid')(FlattenAll)
+Dense_Int = Dense(100, activation='tanh')(FlattenAll)
 
 Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
@@ -90,7 +91,7 @@ losses = {
 
 # Define loss weights
 weights = {
-    'XYs_Out': 1}
+    'XYs_Out': 1000000000}
 
 # Compile the model
 model.compile(
@@ -131,7 +132,7 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=20,
+        epochs=30,
         verbose=1,
         batch_size=20,
         validation_split=0.1)
@@ -149,10 +150,10 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': test_y}
 
-    train_in = train_y[30, :, :, :]
+    train_in = train_y[0, :, :, :]
     print(train_in)
 
-    train_out = model.predict(train_X[30, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
+    train_out = model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
     print(train_out)
 
     print(model.evaluate(
