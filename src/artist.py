@@ -49,8 +49,8 @@ class ImageBundle():
 
 class CustomImage():
     '''A randomly-generated image object used to train the NN model
-    IN: image width=256px, image height=256px'''
-    def __init__(self, width=256, height=256):
+    IN: image width=50px, image height=50px'''
+    def __init__(self, width=50, height=50):
         self.WIDTH, self.HEIGHT = width, height
 
         # Array of triangles will be like [pos_x, pos_y, w_scale, h_scale, rot]
@@ -120,7 +120,7 @@ class CustomImage():
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformation
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
-        ctx.set_line_width(6.0)  # Line width
+        ctx.set_line_width(1.0)  # Line width
         ctx.move_to(x1*WIDTH, y1*HEIGHT)
         ctx.line_to(x2*WIDTH, y2*HEIGHT)
         ctx.stroke()
@@ -131,8 +131,7 @@ class CustomImage():
         for i in range(num_lines):
             # Randomize drawing params
             x1, x2 = np.random.rand(2)
-            y1 = np.random.rand() / 2  # Upper half of frame
-            y2 = 0.5 + np.random.rand() / 2  # Lower half of frame
+            y1, y2 = np.random.rand(2)
 
             self.draw_line(x1, y1, x2, y2, alpha=1)
             self.lines[i, :] = [x1, y1, x2, y2]
@@ -165,7 +164,7 @@ class CustomImage():
 class InputImage(CustomImage):
     '''A object just for handling model inputs
     (__init__() and display() overwritten)
-    IN: A path to a 256x256 JPEG file'''
+    IN: A path to a 50x50 JPEG file'''
 
     def __init__(self, image_path):
         self.img_in = Image.open(image_path)
@@ -182,10 +181,10 @@ class InputImage(CustomImage):
         self.surface = cairo.ImageSurface.create_for_data(
             barr,
             cairo.FORMAT_A8,
-            256, 256)
+            50, 50)
         buff = self.surface.get_data()
         self.data = np.ndarray(
-            shape=(256, 256, 1),
+            shape=(50, 50, 1),
             dtype=np.uint8,
             buffer=buff)
 
@@ -219,7 +218,7 @@ class OutputImage(CustomImage):
         if self.lines is not None:
             for line in self.lines:
                 x1, y1, x2, y2 = line
-                self.draw_line(x1, x2, y1, y2, alpha=1)
+                self.draw_line(x1, y1, x2, y2, alpha=1)
 
         if self.points is not None:
             for point in self.points:
@@ -232,9 +231,9 @@ if (__name__ == '__main__'):
     create_num_tri = int(input('How many triangles per image?'))
     create_num_lines = int(input('How many lines per image?'))
     create_save_path = input('Path (.pkl) to save to?')
-    new_bundle = ImageBundle(create_bundle_size, 256, 256, num_tri=create_num_tri, num_lines=create_num_lines)
+    new_bundle = ImageBundle(create_bundle_size, 50, 50, num_tri=create_num_tri, num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
-    OutputImage(256, 256,
+    OutputImage(50, 50,
         triangles=new_bundle.tri_list[0, :, :, 0],
         lines=new_bundle.line_list[0, :, :, 0]).display()
