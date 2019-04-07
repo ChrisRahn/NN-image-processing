@@ -13,13 +13,14 @@ from tensorflow.keras.constraints import min_max_norm, non_neg
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
-from kernels import sobel_5x, outline_big
+from kernels import sobel_5x, outline, outline_big
 from artist import CustomImage, ImageBundle, InputImage, OutputImage
 import pickle
 import sys
 from tensorflow.keras.layers import Input, MaxPool2D, Conv2D, BatchNormalization, Dropout, Flatten, Concatenate, Dense, Reshape, Activation, Lambda, LeakyReLU
 
-# Define Sobel filter
+# Define Sobel filters
+outline = tf.constant_initializer(outline())
 sobel_5x = tf.constant_initializer(sobel_5x())
 outline_big = tf.constant_initializer(outline_big())
 
@@ -27,7 +28,7 @@ outline_big = tf.constant_initializer(outline_big())
 # Note that the first index (the sample index out of the batch) is stripped
 
 # Define the model's layers
-model_input = Input(shape=(256, 256, 1))
+model_input = Input(shape=(50, 50, 1))
 
 Lambda_In = Lambda(lambda x: (x-128)/64.)(model_input)
 
@@ -36,17 +37,17 @@ Activ_In = Activation('tanh')(Lambda_In)
 #Pool = MaxPool2D(pool_size=(4, 4))(BN_In)  # (256, 256, 1)
 #
 Conv1 = Conv2D(
-    filters=50, kernel_size=(5, 5),
+    filters=1, kernel_size=(3, 3),
     padding='same', data_format='channels_last',
     activation='tanh',
-    kernel_initializer=sobel_5x
+    kernel_initializer=outline
     )(Activ_In)
 #Activ1 = Activation('sigmoid')(Conv1)
 #BN1 = BatchNormalization(axis=3)(Conv1)
 #Drop1 = Dropout(0.1)(Conv1)
 #
 #Conv2 = Conv2D(
-#    filters=64, kernel_size=(5, 5),
+#    filters=128, kernel_size=(5, 5),
 #    padding='same', data_format='channels_last',
 #    activation='tanh')(Conv1)
 #Activ2 = Activation('tanh')(Conv2)
@@ -54,8 +55,8 @@ Conv1 = Conv2D(
 #Drop2 = Dropout(0.1)(Conv2)
 #
 #Conv3 = Conv2D(
-#    filters=64, kernel_size=(5, 5), padding='same',
-#    data_format='channels_last')(Drop2)
+#    filters=128, kernel_size=(7, 7), padding='same',
+#    data_format='channels_last')(Conv2)
 #Activ3 = Activation('tanh')(Conv3)
 #BN3 = BatchNormalization(axis=3)(Activ3)
 #Drop3 = Dropout(0.1)(BN3)
@@ -71,7 +72,10 @@ FlattenAll = Flatten()(Conv1)
 
 #BN_In = BatchNormalization(axis=-1)(Flatten4)
 
-Dense_Int = Dense(100, activation='tanh')(FlattenAll)
+Dense_Int = Dense(2500, activation='tanh')(FlattenAll)
+
+#Dense_Int2 = Dense(1000, activation='tanh')(Dense_Int)
+
 
 Dense_XYs = Dense(1*4, activation='sigmoid')(Dense_Int)
 
@@ -109,9 +113,9 @@ if (__name__ == '__main__'):
         SAVE_PATH = sys.argv[2]
     except IndexError:
         print('Pass me both the training set and save filepaths!')
-        TRAINING_SET = '../data/train_set_lines_1.pkl' # HINT input('What\'s the training set filepath?')
-        TESTING_SET = '../data/test_set_lines_1.pkl'
-        SAVE_PATH = '../models/saved_model_lines_1.h5' # HINT input('What\'s the saved model filepath?')
+        TRAINING_SET = '../data/train_set_lines_small.pkl' # HINT input('What\'s the training set filepath?')
+        TESTING_SET = '../data/test_set_lines_small.pkl'
+        SAVE_PATH = '../models/saved_model_lines_small.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
@@ -132,7 +136,7 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=30,
+        epochs=300,
         verbose=1,
         batch_size=20,
         validation_split=0.1)
@@ -150,10 +154,10 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': test_y}
 
-    train_in = train_y[0, :, :, :]
+    train_in = train_y[10, :, :, :]
     print(train_in)
 
-    train_out = model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
+    train_out = model.predict(train_X[10, :, :, :].reshape(1, 50, 50, 1))[0, 0, :, :, :]
     print(train_out)
 
     print(model.evaluate(
