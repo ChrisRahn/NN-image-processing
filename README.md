@@ -1,6 +1,6 @@
-Fracture - An Image Decomposition Engine (In Progress)
+Fracture - An Image Decomposition Engine
 
-Version 0.1.0
+Version 0.4.0
 
 Chris Rahn
 
@@ -14,20 +14,16 @@ To de-construct a given image into its simplest geometric elements for natural f
 ----------
 MODEL
 ----------
-(in flux)
-
 A sequential Tensorflow neural network with these layers:
 
--   IN: 512x512 px greyscale image (1 channel)
--   1. 2D Convolution, 3x3 kernel, stride 1, 15 filters
--   2. MaxPool, size 2
--   3. 2D Convolution, 3x3 kernel, stride 1, 15 filters
--   4. MaxPool, size 2
--   5. Flatten operation
--   6. Dense layer, 300 nodes
--   7. Dense layer, 150 nodes
--   8. Parametric ReLU activation layer
--   9. Reshape operation to 30x5 output
+-   IN: JPEG or PNG file of any size
+-   1. Input array reshaped to represent a 50x50 px greyscale image
+-   2. Normalize brightness values
+-   3. 2D convolution using a 3x3 outline kernel
+-   4. Flatten operation
+-   5. Densely-connected layer, 2500 nodes
+-   6. Densely-connected output layer, 4 nodes
+-   7. Reshape to 1x4 prediction of (x1, y1, x2, y2)
 
 ----------
 DEPENDENCIES
@@ -41,11 +37,5 @@ DEPENDENCIES
 ----------
 TO-DO
 ----------
-- Add more convolutional layers to reduce neuron saturation
-- Handling for differently sized images (currently 512x512 px only)
-- Sort out RGB channel handling
-- Enforce more consistent filename I/O
-- TensorFlow logging, early stopping?
-- Expand model to more shape channels (currently triangles only)
+- TensorFlow logging & early stopping
 - Web app framework to ingest a new image and report result
-- Better Markdown in this README!
