@@ -6,32 +6,36 @@ Runs the input image through the neural network model
 import sys
 from tensorflow import keras
 from artist import InputImage, OutputImage
-import numpy as np
 
 if (__name__ == '__main__'):
-    # ??? assert len(sys.argv) == 2, 'Gotta give me a JPEG to predict!'
-    # XXX Testing constants - Remove
+
     try:
         IMAGE_PATH = sys.argv[1]
     except IndexError:
         IMAGE_PATH = input('Which image should I match?')
 
-    try:
-        NUM_SHAPES = int(sys.argv[2])
-    except IndexError:
-        NUM_SHAPES = int(input('How many shapes do you want?'))
+    NUM_SHAPES = 1
+#    TODO Enable multi-shape output
+#    try:
+#        NUM_SHAPES = int(sys.argv[2])
+#    except IndexError:
+#        NUM_SHAPES = int(input('How many shapes do you want?'))
 
-    MODEL_PATH = input('Which saved model should I use?')
+    try:
+        MODEL_PATH = sys.argv[2]
+    except IndexError:
+        MODEL_PATH = input('Which saved model should I use?')
+
     model = keras.models.load_model(
-        MODEL_PATH
-        )
+        MODEL_PATH)
 
     # Read in the passed image
+    # Input is resized to 50x50 px
     img_in = InputImage(IMAGE_PATH)
 
     # Reshape to a 1-page batch and feed through model
-    model_feed = img_in.data.reshape(1, 50, 50, 1)
-    model_out = model.predict(model_feed)  # [x1, y1, x2, y2]
+    model_feed = img_in.data.reshape(1, 50, 50, 1)  # [x1, y1, x2, y2]
+    model_out = model.predict(model_feed)
 
     # Concatenate model outputs to one array
     shapes_out = model_out[0, 0, :, :, :]

@@ -37,7 +37,7 @@ Activ_In = Activation('relu')(Lambda_In)
 Conv1 = Conv2D(
     filters=25, kernel_size=(5, 5),
     padding='same', data_format='channels_last',
-    activation='sigmoid',
+    activation='tanh',
     kernel_initializer=outline_big
     )(Activ_In)
 #Activ1 = Activation('sigmoid')(Conv1)
@@ -150,10 +150,10 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': test_y}
 
-    train_in = train_y[0, :, :, :]
+    train_in = train_y[3, :, :, :]
     print('\n', train_in)
 
-    train_out = model.predict(train_X[0, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
+    train_out = model.predict(train_X[3, :, :, :].reshape(1, 256, 256, 1))[0, 0, :, :, :]
     print('\n', train_out)
 
     print(model.evaluate(

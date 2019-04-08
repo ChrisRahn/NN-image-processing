@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Generator script for training image-bundles
+Classes and methods to handle image inputs and outputs
 """
-import numpy as np
-import io
 import math
 import cairo
 import pickle
+import numpy as np
 from PIL import Image
 
 
 class ImageBundle():
     '''A collection of randomly-generated CustomImages'''
-    def __init__(self, batch_size, width, height, num_tri=0, num_lines=0, num_points=0):
+    def __init__(self, batch_size, width, height,
+                 num_tri=0, num_lines=0, num_points=0):
+
         # Bundle individual images (array)
         self.images = np.empty((batch_size, height, width, 1))
 
@@ -27,21 +28,18 @@ class ImageBundle():
             if num_tri:
                 new_img.rand_tri(num_tri)
                 self.tri_list[i, :, :, 0] = new_img.triangles[:, :]
-                # Reorder tri_list from largest to smallest (by w_scale*h_scale)
+                # Reorder tri_list from largest to smallest
                 areas = self.tri_list[i, :, 2, 0] * self.tri_list[i, :, 3, 0]
-                sorted_areas = self.tri_list[i, np.argsort(areas)[-1::-1], :, 0]
-                self.tri_list[i, :, :, 0] = sorted_areas
+                sorted_area = self.tri_list[i, np.argsort(areas)[-1::-1], :, 0]
+                self.tri_list[i, :, :, 0] = sorted_area
 
             if num_lines:
                 new_img.rand_line(num_lines)
-                self.line_list[i, :, :, 0] = new_img.lines[:, :]
-                self.point_list[i, :, :, 0] = new_img.lines[:, :].reshape(2*num_lines, 2)
+                lines = new_img.lines[:, :]
+                self.line_list[i, :, :, 0] = lines
+                self.point_list[i, :, :, 0] = lines.reshape(2*num_lines, 2)
 
-#            if num_points:
-#                new_img.rand_point(num_points)
-#                self.point_list[i, :, :, 0] = new_img.points[:, :]
-
-            self.images[i, :, :, 0] = new_img.img[:, :, 0]  # !!!Red channel
+            self.images[i, :, :, 0] = new_img.img[:, :, 0]  # One channel only
 
     def save(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
@@ -64,6 +62,7 @@ class CustomImage():
 
         # Initialize an array of white RGBA values (4 channel)
         self.img = np.zeros((self.HEIGHT, self.WIDTH, 4), dtype=np.uint8)
+
         # Initialize a Cairo context and drawing surface
         self.surface = cairo.ImageSurface.create_for_data(
             self.img,
@@ -78,10 +77,9 @@ class CustomImage():
         Middle-centered w/ side length 0.25*WIDTH'''
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
+
+        # Draw points of equilateral triangle centered at (0, 0)
         ctx.move_to(0, -0.144*HEIGHT)
-#        ctx.rel_line_to(0.5*math.cos(-math.pi/3),
-#                        0.5*math.sin(-math.pi/3))
-#        ctx.rel_line_to(-0.5, 0)
         ctx.line_to(0.125*WIDTH, 0.072*HEIGHT)
         ctx.line_to(-0.125*WIDTH, 0.072*HEIGHT)
         ctx.close_path()
@@ -89,9 +87,11 @@ class CustomImage():
     def draw_tri(self, off_x, off_y, w_scale, h_scale, rot, alpha=0.5):
         ''' Draw a particular triangle using triangle() as a template'''
         ctx = self.ctx
+
         # Reset drawing transformation and choose black source
         ctx.identity_matrix()
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)
+
         # Set drawing transformation, then stamp triangle template
         ctx.translate(off_x, off_y)
         ctx.rotate(rot)
@@ -239,9 +239,11 @@ if (__name__ == '__main__'):
     create_num_tri = int(input('How many triangles per image?'))
     create_num_lines = int(input('How many lines per image?'))
     create_save_path = input('Path (.pkl) to save to?')
-    new_bundle = ImageBundle(create_bundle_size, 50, 50, num_tri=create_num_tri, num_lines=create_num_lines)
+    new_bundle = ImageBundle(create_bundle_size, 50, 50,
+                             num_tri=create_num_tri,
+                             num_lines=create_num_lines)
     new_bundle.save(create_save_path)
     print('Here\'s the first of the new images I just created.')
     OutputImage(50, 50,
-        triangles=new_bundle.tri_list[0, :, :, 0],
-        lines=new_bundle.line_list[0, :, :, 0]).display()
+                triangles=new_bundle.tri_list[0, :, :, 0],
+                lines=new_bundle.line_list[0, :, :, 0]).display()
