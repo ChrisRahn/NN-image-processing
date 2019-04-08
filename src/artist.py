@@ -115,12 +115,12 @@ class CustomImage():
             self.draw_tri(off_x, off_y, w_scale, h_scale, rot, alpha=0.5)
             self.triangles[i, :] = [off_x, off_y, w_scale, h_scale, rot]
 
-    def draw_line(self, x1, y1, x2, y2, alpha=1):
+    def draw_line(self, x1, y1, x2, y2, alpha=1, line_w=1.0):
         WIDTH, HEIGHT = self.WIDTH, self.HEIGHT
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformation
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
-        ctx.set_line_width(1.0)  # Line width
+        ctx.set_line_width(line_w)  # Line width
         ctx.move_to(x1*WIDTH, y1*HEIGHT)
         ctx.line_to(x2*WIDTH, y2*HEIGHT)
         ctx.stroke()
@@ -168,6 +168,8 @@ class InputImage(CustomImage):
 
     def __init__(self, image_path):
         self.img_in = Image.open(image_path)
+        width_in = self.img_in.width
+        height_in = self.img_in.height
 
         # Add alpha channel if not present
         if 'A' not in self.img_in.getbands():
@@ -176,8 +178,14 @@ class InputImage(CustomImage):
         # Convert to greyscale mode (for now)
         img_grey = self.img_in.convert('L')
 
+        # Downscale to 50x50 px
+        img_scale = img_grey.transform(
+            size=(52, 52),
+            method=Image.EXTENT,
+            data=[0, 0, width_in, height_in])
+
         # Cast into a NumPy array through a Cairo surface
-        barr = bytearray(img_grey.tobytes('raw', 'L'))
+        barr = bytearray(img_scale.tobytes('raw', 'L'))
         self.surface = cairo.ImageSurface.create_for_data(
             barr,
             cairo.FORMAT_A8,
@@ -218,7 +226,7 @@ class OutputImage(CustomImage):
         if self.lines is not None:
             for line in self.lines:
                 x1, y1, x2, y2 = line
-                self.draw_line(x1, y1, x2, y2, alpha=1)
+                self.draw_line(x1, y1, x2, y2, alpha=1, line_w=25)
 
         if self.points is not None:
             for point in self.points:

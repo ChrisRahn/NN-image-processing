@@ -30,7 +30,7 @@ if (__name__ == '__main__'):
     img_in = InputImage(IMAGE_PATH)
 
     # Reshape to a 1-page batch and feed through model
-    model_feed = img_in.data.reshape(1, 256, 256, 1)
+    model_feed = img_in.data.reshape(1, 50, 50, 1)
     model_out = model.predict(model_feed)  # [x1, y1, x2, y2]
 
     # Concatenate model outputs to one array
@@ -44,7 +44,7 @@ if (__name__ == '__main__'):
     print(shapes_filt)
 
     # Wrap the raw output in the OutputImage class
-    img_out = OutputImage(256, 256, points=shapes_filt)
+    img_out = OutputImage(100, 100, lines=shapes_filt)
 
     # Display both the input and output image
     img_in.display()

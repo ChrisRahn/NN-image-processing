@@ -102,7 +102,7 @@ model.compile(
     optimizer=optimizer,
     loss=losses,
     loss_weights=weights,
-    metrics=['mean_squared_error', 'mean_absolute_eror']
+    metrics=['mean_squared_error', 'mae']
     )
 
 if (__name__ == '__main__'):
@@ -115,7 +115,7 @@ if (__name__ == '__main__'):
         print('Pass me both the training set and save filepaths!')
         TRAINING_SET = '../data/train_set_lines_ext.pkl' # HINT input('What\'s the training set filepath?')
         TESTING_SET = '../data/test_set_lines_ext.pkl'
-        SAVE_PATH = '../models/saved_model_lines_ext.h5' # HINT input('What\'s the saved model filepath?')
+        SAVE_PATH = '../models/saved_model_lines_ext2.h5' # HINT input('What\'s the saved model filepath?')
 #        sys.exit()
 
     # Load the training set from the pickled ImageBundle
@@ -134,7 +134,7 @@ if (__name__ == '__main__'):
 
     # Fit the model to the training ImageBundle
     model.fit(
-        train_X, 
+        train_X,
         training_outs,
         epochs=60,
         verbose=1,
@@ -154,10 +154,10 @@ if (__name__ == '__main__'):
     testing_outs = {
         'XYs_Out': test_y}
 
-    train_in = train_y[30, :, :, :]
+    train_in = train_y[20, :, :, :]
     print(train_in)
 
-    train_out = model.predict(train_X[30, :, :, :].reshape(1, 50, 50, 1))[0, 0, :, :, :]
+    train_out = model.predict(train_X[20, :, :, :].reshape(1, 50, 50, 1))[0, 0, :, :, :]
     print(train_out)
 
     print(model.evaluate(
