@@ -6,6 +6,7 @@ Serve the web app
 from flask import Flask, render_template, request, jsonify, Response
 import tensorflow as tf
 from tensorflow import keras
+import os
 import src
 
 # Suppress TensorFlow warnings
@@ -17,10 +18,13 @@ app = Flask(__name__)
 # Load model
 model = keras.models.load_model('./models/fracture.h5')
 
-
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('home.html')
+    # Fetch contents of /static directory
+    img_list = [i for i in os.listdir('./static/')
+                if i.split('.')[1] in ['png', 'jpg', 'jpeg']]
+
+    return render_template('home.html', img_list=img_list)
 
 
 @app.route('/predict', methods=['POST'])

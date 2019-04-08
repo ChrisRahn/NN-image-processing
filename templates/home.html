@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <html>
     
 <head>
@@ -41,11 +43,11 @@
 <body>
     <div class='row'>
         <div class='side'>
-            <h2>Pics</h2>
-            <ul>
-                <p>test</p>
-                <p>test1</p>
-            </ul>
+        <ul>
+        {% for img in img_list %}
+            <li><a>{{img}}</a></li>
+        {% endfor %}
+        </ul>
         </div>
 
         <div class='main'>
