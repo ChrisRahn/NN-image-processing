@@ -6,3 +6,9 @@
 **.DS_Store
 **.h5
 **.pkl
+
+data/
+
+models/
+
+\.DS_Store
