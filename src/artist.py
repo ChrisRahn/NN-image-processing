@@ -41,7 +41,7 @@ class ImageBundle():
 
             self.images[i, :, :, 0] = new_img.img[:, :, 0]  # One channel only
 
-    def save(self, filepath):
+    def dump(self, filepath):
         pickle.dump(self, open(filepath, 'wb'))
 
 
@@ -160,6 +160,10 @@ class CustomImage():
         with Image.fromarray(self.img, mode='RGBA') as out:
             out.show()
 
+    def save(self, filepath):
+        with Image.fromarray(self.img, mode='RGBA') as out:
+            out.save(filepath)
+
 
 class InputImage(CustomImage):
     '''A object just for handling model inputs
@@ -242,7 +246,7 @@ if (__name__ == '__main__'):
     new_bundle = ImageBundle(create_bundle_size, 50, 50,
                              num_tri=create_num_tri,
                              num_lines=create_num_lines)
-    new_bundle.save(create_save_path)
+    new_bundle.dump(create_save_path)
     print('Here\'s the first of the new images I just created.')
     OutputImage(50, 50,
                 triangles=new_bundle.tri_list[0, :, :, 0],

@@ -37,6 +37,21 @@
             padding: 10px;
             font-size: 30px;
         }
+        ul {
+            padding-inline-start: 0px;
+            margin: 0px;
+        }
+        li {
+            list-style-type: none;
+            font-family: Tahoma;
+            text-align: center;
+            width: 100%;
+            font-size: initial;
+            display: inline-block;
+            border-style: solid;
+            border-width: 1px;
+            background-color: white;
+        }
     </style>
 </head>
 
@@ -45,7 +60,7 @@
         <div class='side'>
         <ul>
         {% for img in img_list %}
-            <li><a>{{img}}</a></li>
+            <li class='imgitem'>{{img}}</li>
         {% endfor %}
         </ul>
         </div>
@@ -57,6 +72,9 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src='static/crystal_ball.js'></script>
 
 </body>
 

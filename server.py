@@ -4,10 +4,10 @@ Serve the web app
 '''
 
 from flask import Flask, render_template, request, jsonify, Response
-import tensorflow as tf
-from tensorflow import keras
+#import tensorflow as tf
+#from tensorflow import keras
 import os
-import src
+import src.predictor
 
 # Suppress TensorFlow warnings
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -17,6 +17,7 @@ app = Flask(__name__)
 
 # Load model
 model = keras.models.load_model('./models/fracture.h5')
+
 
 @app.route('/', methods=['GET'])
 def home():
@@ -30,10 +31,10 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     req = request.get_json()
-    input_fp = req['file']
+    input_fp = './static/' + req['item']
     print(input_fp)
-    output = src.predictor.predict(input_fp)
-    return jsonify(output)
+    shapes_out, output_fp = src.predictor.predict(input_fp)
+    return jsonify(shapes_out, output_fp)
 
 
 if (__name__ == '__main__'):

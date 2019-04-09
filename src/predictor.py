@@ -8,7 +8,7 @@ from tensorflow import keras
 from src.artist import InputImage, OutputImage
 
 
-def predict(IMAGE_PATH):
+def predict(model, IMAGE_PATH, NUM_SHAPES=1):
     # Read in the passed image
     # Input is resized to 50x50 px
     img_in = InputImage(IMAGE_PATH)
@@ -36,9 +36,9 @@ def predict(IMAGE_PATH):
     img_out.display()
 
     # Save output to tmp directory
-    img_out.save('../tmp/prediction.jpg')
+    img_out.save('./tmp/prediction.png')
 
-    return shapes_out, '/tmp/prediction.jpg'
+    return shapes_out, './tmp/prediction.png'
 
 
 if (__name__ == '__main__'):
