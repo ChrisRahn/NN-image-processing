@@ -12,17 +12,22 @@
         }
         .row {
             display: flex;
-            height: 100%;
             flex-wrap: nowrap;
+            border-style: solid;
+            border-width: thin;
+            border-color: DarkBlue;
         }
         .side {
             flex: 0 0 10%;
-            background-color: DodgerBlue;
+            background-color: LightSkyBlue;
             padding: 10px;
+            border-right-style: solid;
+            border-width: medium;
+            border-color: DarkBlue;
         }
         .main {
             flex: 0 0 90%;
-            background-color: Azure;
+            background-color: AliceBlue;
             padding: 10px;
         }
         .flex-container {
@@ -30,9 +35,17 @@
             flex-flow: row wrap;
             justify-content: center;
             align-items: center;
-            background-color: Azure;
+            background-color: AliceBlue;
         }
-        .flex-container > img {
+        .img-box {
+            border-style: solid;
+            border-width: thin;
+            border-color: #000000;
+            margin: 10px;
+            padding: 10px;
+            justify-content: center;
+        }
+        .img-box > img {
             width: 400px;
             height: 400px;
             border-style: solid;
@@ -41,6 +54,10 @@
             margin: 10px;
             padding: 10px;
             font-size: 30px;
+        }
+        .img-box > p {
+            width: 100%;
+            font-size: 40px;
         }
         ul {
             padding-inline-start: 0px;
@@ -58,15 +75,20 @@
             background-color: white;
         }
         button {
+            width: 100%;
             align-items: center;
         }
-        #readout {
+        p, h1 {
             font-family: Tahoma;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
+    <div class='row' style='background-color:DodgerBlue'}>
+        <h1 style={self-align:center}>Machine Sight</h1>
+    </div>
     <div class='row'>
         <div class='side'>
         <ul id='imglist'>
@@ -79,8 +101,14 @@
 
         <div class='main'>
             <div class='flex-container'>
-                <img id='in_img' src=/static/standby.jpg/>
-                <img id='out_img' src=/static/standby.jpg/>
+                <div class='img-box'>
+                    <img id='in_img' src=/static/standby.jpg/>
+                    <p>Image</p>
+                </div>
+                <div class='img-box'>
+                    <img id='out_img' src=/static/standby.jpg/>
+                    <p>Prediction</p>
+                </div>
             </div>
             <div class='flex-container'><p id='readout'></p></div>
         </div>
