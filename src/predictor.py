@@ -35,7 +35,10 @@ def predict(IMAGE_PATH):
     img_in.display()
     img_out.display()
 
-    return shapes_out
+    # Save output to tmp directory
+    img_out.save('../tmp/prediction.jpg')
+
+    return shapes_out, '/tmp/prediction.jpg'
 
 
 if (__name__ == '__main__'):
