@@ -6,17 +6,22 @@
     <title>Fracture</title>
     <link rel='stylesheet' href='static/home.css'>
     <style>
+        html, body {
+        height: 100%;
+        width: 100%;
+        }
         .row {
             display: flex;
+            height: 100%;
             flex-wrap: nowrap;
         }
         .side {
-            flex: 20%;
+            flex: 0 0 10%;
             background-color: DodgerBlue;
             padding: 10px;
         }
         .main {
-            flex: 80%;
+            flex: 0 0 90%;
             background-color: Azure;
             padding: 10px;
         }
@@ -52,25 +57,32 @@
             border-width: 1px;
             background-color: white;
         }
+        button {
+            align-items: center;
+        }
+        #readout {
+            font-family: Tahoma;
+        }
     </style>
 </head>
 
 <body>
     <div class='row'>
         <div class='side'>
-        <ul>
+        <ul id='imglist'>
         {% for img in img_list %}
             <li class='imgitem'>{{img}}</li>
         {% endfor %}
         </ul>
+        <button id='refresh'>Refresh</button>
         </div>
 
         <div class='main'>
-            <div class=flex-container>
-                <img id='in_img' src=/static/segment.jpg/>
-                <p id='readout'></p>
-                <img id='out_img' src=/static/segment.jpg/>
+            <div class='flex-container'>
+                <img id='in_img' src=/static/standby.jpg/>
+                <img id='out_img' src=/static/standby.jpg/>
             </div>
+            <div class='flex-container'><p id='readout'></p></div>
         </div>
     </div>
 

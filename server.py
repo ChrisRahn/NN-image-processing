@@ -3,14 +3,14 @@
 Serve the web app
 '''
 
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify
 import tensorflow as tf
-from tensorflow import get_default_graph, Session
+from tensorflow import Session
 from tensorflow import keras
 import numpy as np
 import os
 from src.predictor import predict as __predict
-from src.artist import InputImage, OutputImage
+#from src.artist import InputImage, OutputImage
 
 # Suppress TensorFlow warnings
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -19,11 +19,19 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET'])
-def home():
+def fetch_list():
     # Fetch contents of /static directory
     img_list = [i for i in os.listdir('./static/')
                 if i.split('.')[1] in ['png', 'jpg', 'jpeg']]
+    img_list.remove('prediction.png')
+    img_list.sort()
+    return img_list
+
+
+@app.route('/', methods=['GET'])
+def home():
+
+    img_list = fetch_list()
 
     return render_template('home.html', img_list=img_list)
 
@@ -43,6 +51,14 @@ def predict():
     out_str = '(' + str(x1) + ', ' + str(y1) + ')---(' \
         + str(x2) + ', ' + str(y2) + ')'
     return jsonify(out_str)
+
+
+@app.route('/refreshlist', methods=['POST'])
+def refresh_list():
+
+    img_list = fetch_list()
+
+    return jsonify(img_list)
 
 
 if (__name__ == '__main__'):
