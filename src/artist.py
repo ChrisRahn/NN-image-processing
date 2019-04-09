@@ -230,7 +230,7 @@ class OutputImage(CustomImage):
         if self.lines is not None:
             for line in self.lines:
                 x1, y1, x2, y2 = line
-                self.draw_line(x1, y1, x2, y2, alpha=1, line_w=25)
+                self.draw_line(x1, y1, x2, y2, alpha=1, line_w=5)
 
         if self.points is not None:
             for point in self.points:

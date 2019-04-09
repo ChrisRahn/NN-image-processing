@@ -4,6 +4,7 @@
 Runs the input image through the neural network model
 """
 import sys
+from tensorflow import Session, get_default_graph
 from tensorflow import keras
 from src.artist import InputImage, OutputImage
 
@@ -26,22 +27,22 @@ def predict(model, IMAGE_PATH, NUM_SHAPES=1):
 
     # Print the numerical output to the console
     print(shapes_filt)
-    shapes_out = str(shapes_filt)
+    shapes_out = shapes_filt
 
     # Wrap the raw output in the OutputImage class
     img_out = OutputImage(100, 100, lines=shapes_filt)
 
-    # Display both the input and output image
-    img_in.display()
-    img_out.display()
+    # Display both the input and output image (DISABLED)
+#    img_in.display()
+#    img_out.display()
 
     # Save output to tmp directory
-    img_out.save('./tmp/prediction.png')
+    img_out.save('./static/prediction.png')
 
-    return shapes_out, './tmp/prediction.png'
+    return shapes_out
 
 
-if (__name__ == '__main__'):
+if (__name__ == '__XXX__'):  # Disabled
 
     try:
         IMAGE_PATH = sys.argv[1]

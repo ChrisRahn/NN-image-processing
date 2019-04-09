@@ -4,20 +4,19 @@ Serve the web app
 '''
 
 from flask import Flask, render_template, request, jsonify, Response
-#import tensorflow as tf
-#from tensorflow import keras
+import tensorflow as tf
+from tensorflow import get_default_graph, Session
+from tensorflow import keras
+import numpy as np
 import os
-import src.predictor
+from src.predictor import predict as __predict
+from src.artist import InputImage, OutputImage
 
 # Suppress TensorFlow warnings
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 # Create the app object that will route our calls
 app = Flask(__name__)
-
-# Load model
-model = keras.models.load_model('./models/fracture.h5')
-
 
 @app.route('/', methods=['GET'])
 def home():
@@ -31,10 +30,18 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     req = request.get_json()
-    input_fp = './static/' + req['item']
+    print(req)
+    input_fp = './static/segment.jpg'  # + req
     print(input_fp)
-    shapes_out, output_fp = src.predictor.predict(input_fp)
-    return jsonify(shapes_out, output_fp)
+    mySession = Session()
+    with mySession:
+        model = keras.models.load_model('./models/fracture.h5')
+        print(model.output)
+        shapes_out = __predict(model, './static/segment.jpg')
+    x1, y1, x2, y2 = np.round(shapes_out[0, :, 0], 2)
+    out_str = '(' + str(x1) + ', ' + str(y1) + ')---(' \
+        + str(x2) + ', ' + str(y2) + ')'
+    return jsonify(out_str)
 
 
 if (__name__ == '__main__'):

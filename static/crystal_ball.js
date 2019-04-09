@@ -5,6 +5,8 @@ $(document).ready(function(){
         const item = $(this).text()
         console.log(item)
 
+        $('#in_img').attr('src', '/static/' + item)
+
         const response = await $.ajax('/predict', {
             data: JSON.stringify(item),
             method: 'post',
@@ -12,6 +14,9 @@ $(document).ready(function(){
         })
 
         console.log(response)
+        
+        $('#out_img').attr('src', '/static/prediction.png')
+        
     })
 })
 
