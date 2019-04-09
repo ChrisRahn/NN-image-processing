@@ -120,6 +120,7 @@ class CustomImage():
         ctx = self.ctx
         ctx.identity_matrix()  # Reset drawing transformation
         ctx.set_source_rgba(0.0, 0.0, 0.0, alpha)  # Black source
+        ctx.set_line_cap(cairo.LineCap.ROUND)
         ctx.set_line_width(line_w)  # Line width
         ctx.move_to(x1*WIDTH, y1*HEIGHT)
         ctx.line_to(x2*WIDTH, y2*HEIGHT)
