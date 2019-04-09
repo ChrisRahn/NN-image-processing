@@ -18,6 +18,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 # Create the app object that will route our calls
 app = Flask(__name__)
 
+
 @app.route('/', methods=['GET'])
 def home():
     # Fetch contents of /static directory
@@ -31,13 +32,13 @@ def home():
 def predict():
     req = request.get_json()
     print(req)
-    input_fp = './static/segment.jpg'  # + req
+    input_fp = './static/' + req
     print(input_fp)
     mySession = Session()
     with mySession:
         model = keras.models.load_model('./models/fracture.h5')
         print(model.output)
-        shapes_out = __predict(model, './static/segment.jpg')
+        shapes_out = __predict(model, input_fp)
     x1, y1, x2, y2 = np.round(shapes_out[0, :, 0], 2)
     out_str = '(' + str(x1) + ', ' + str(y1) + ')---(' \
         + str(x2) + ', ' + str(y2) + ')'

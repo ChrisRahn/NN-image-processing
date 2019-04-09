@@ -15,7 +15,9 @@ $(document).ready(function(){
 
         console.log(response)
         
-        $('#out_img').attr('src', '/static/prediction.png')
+        $('#readout').text(response)
+        
+        $('#out_img').attr('src', '/static/prediction.png' + '?' + Math.random())
         
     })
 })
