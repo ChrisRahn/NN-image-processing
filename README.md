@@ -50,4 +50,4 @@ Computer vision models are notoriously difficult to train - Fracture is no excep
 ----------
 FUTURE WORK
 ----------
-- TensorFlow logging & early stopping
+While the current version of Fracture only roughly fits a single line to each image, future versions would work to better represent the complexity of input images, by increasing both the number and type of shapes used.
