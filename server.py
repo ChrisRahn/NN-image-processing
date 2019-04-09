@@ -44,7 +44,7 @@ def predict():
     print(input_fp)
     mySession = Session()
     with mySession:
-        model = keras.models.load_model('./models/fracture.h5')
+        model = keras.models.load_model('./models/fracture2.h5')
         print(model.output)
         shapes_out = __predict(model, input_fp)
     x1, y1, x2, y2 = np.round(shapes_out[0, :, 0], 2)

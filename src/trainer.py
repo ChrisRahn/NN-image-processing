@@ -100,7 +100,7 @@ if (__name__ == '__main__'):
     model.fit(
         train_X,
         training_outs,
-        epochs=60,
+        epochs=120,
         verbose=1,
         batch_size=20,
         validation_split=0.1)
