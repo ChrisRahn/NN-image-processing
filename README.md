@@ -42,9 +42,7 @@ INPUT: A JPEG or PNG file of any size
 
 Computer vision models are notoriously difficult to train - Fracture is no exception. Many different model configurations and training regimes were attempted, however none were able to outperform a mean absolute error of about 25%. This means that each of the four coordinates defining the model's outputs has an expected error of 25% of the image canvas' corresponding dimension. While this often produces poor estimations that don't align with visual inspection, Fracture shows promising initial results, especially on simple, high-contrast images of singular objects. The model is more successful at capturing the subject's extents and orientation for such images.
 
-![](examples/book_example.png?raw=true)
-
-![](examples/corgi_example.png?raw=true)
+![](examples/screenshot.png?raw=true)
 
 ## FUTURE WORK
 
