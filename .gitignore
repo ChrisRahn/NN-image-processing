@@ -1,5 +1,5 @@
-**.png
-**.jpg
+*.png
+*.jpg
 **.log
 **.pyc
 **/__pycache__/
@@ -14,3 +14,5 @@ models/
 \.DS_Store
 
 img/
+
+*.pdf
