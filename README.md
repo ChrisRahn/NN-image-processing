@@ -15,7 +15,13 @@ Chris Rahn, April 2019
 
 ## INTRO
 
-Computer vision is a subfield of machine learning that applies neural network models to extract information from digital images. Often, these models must make various assumptions about the input images, such as the camera's orientation or the scale of relevant features. Fracture seeks to develop a universally-applicable computer vision model capable of extracting the most basic geometric features from any image to serve as a basis for further specification.
+Computer vision is a subfield of machine learning that applies neural network models to extract information from digital images. Often, these models must make various assumptions about the input images, such as the camera's orientation or the scale of relevant features. Fracture seeks to develop a universally-applicable computer vision model capable of extracting the basic geometric features from any image to serve as a basis for further specification.
+
+## UPDATES
+
+4/24/19 - While I'm pleased with the progress I've made on the project so far, some more research has convinced me that a change of approach is warranted. As it is, the neural network model simplifies the problem statement into finding the endpoints of the "strongest" line embedded in the image. While this does produce a reasonable result, I believe it also presents a roadblock in the form of the symmetries between these critical points. By this, I mean the fact that the model necessarily finds these endpoints in the form of an ordered pair (A, B), when in actuality the image viewed could have been generated from either (A, B) or (B, A). In other words, the model *should* train to find the *un*ordered endpoints - but I'm not sure this would currently be possible in Tensorflow, or computationally tractable if so.
+
+To move forward from here, I'm going to change tack and try rebuilding the model using Reinforcement Learning techniques in [OpenAI's Gym RL environment](http://gym.openai.com/), reformulating the problem as one of teaching an actor / agent to re-draw the user's input image. Even if this doesn't ultimately pan out, learning to implement this in code will be a worthwhile learning experience and likely give me more insight into the best approach.
 
 ----
 ## METHOD
