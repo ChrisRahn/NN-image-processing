@@ -19,6 +19,7 @@ class KameEnv(gym.Env):
         self.num_pix = self.grid_width*self.grid_height
         self.pos = (1, 1)
         self.speed = 1
+        self.distance_tot = 0
         
         self.grid = np.array([[1, 1],
                               [1, 1]])
@@ -31,13 +32,24 @@ class KameEnv(gym.Env):
         self.action_space = spaces.Tuple((spaces.Discrete(self.grid_width), spaces.Discrete(self.grid_height)))
 
         self.prev_reward = None
+
+        self.reset()
         
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def step(self, action):
-        pass
+        assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
+
+        self.distance_tot += np.sqrt(sum([(i-j)**2 for i,j in zip(self.pos, action)]))
+        self.pos = action
+
+        done = False # TODO
+        reward = -1.0
+
+        return self.pos, reward, done, {}
+
     
     def reset(self):
         pass
