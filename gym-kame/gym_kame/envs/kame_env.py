@@ -2,7 +2,8 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
-import itertools
+from itertools import chain, product
+from collections import defaultdict
 
 class KameEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -33,7 +34,7 @@ class KameEnv(gym.Env):
 
         self.reset()
 
-        self.observation = tuple(itertools.chain(self.pos, self.grid.flatten()))
+        self.observation = tuple(chain(self.pos, self.grid.flatten()))
         # assert self.observation_space.contains(self.observation), "The observation was %r, should be like %s" % (self.observation, observation_space.sample())
         
     def seed(self, seed=None):
@@ -56,32 +57,45 @@ class KameEnv(gym.Env):
         done = False # TODO # stopping
         reward += -0.5  # reward penalty per step
 
-        new_state = tuple(itertools.chain(self.pos, self.grid.flatten()))
+        new_state = tuple(chain(self.pos, self.grid.flatten()))
         return new_state, reward, done, {}
 
     
     def reset(self):
         res_posx, res_posy = self.np_random.randint(2, size=2)
         res_grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
-        self.state = tuple(itertools.chain([res_posx, res_posy], res_grid.flatten()))
+        self.state = tuple(chain([res_posx, res_posy], res_grid.flatten()))
         return self.state
     
     def render(self, mode='human'):
-        screen_width = 600
-        screen_height = 600
-        pix_width = screen_width/self.grid_width
-        pix_height = screen_height/self.grid_height
+        SCREEN_WIDTH = 600
+        SCREEN_HEIGHT = 600
+        pix_width = SCREEN_WIDTH/self.grid_width
+        pix_height = SCREEN_HEIGHT/self.grid_height
+        PIX_POLY = 0.5*np.array([(-pix_width,-pix_height), (-pix_width,+pix_height), (+pix_width,+pix_height), (+pix_width,-pix_height)])
 
         if self.viewer is None:  # Build the viewer
             from gym.envs.classic_control import rendering
-            self.viewer = rendering.Viewer(screen_width, screen_height)
+            self.viewer = rendering.Viewer(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+            # Create grid render
+            for i, j in product(range(self.grid_width), range(self.grid_height)):
+                v = self.grid[i, j]
+                pixel = rendering.make_polygon(v=PIX_POLY, filled=True)
+                pixel.set_color(1-v, 1-v, 1-v)
+                pix_trans = rendering.Transform()
+                pixel.add_attr(pix_trans)
+                pix_trans.set_translation(pix_width*(j+0.5), pix_height*(i+0.5))
+                self.viewer.add_geom(pixel)
+
+            # Create nib render
             nib = rendering.make_circle(radius=10, res=30, filled=True)
             nib.set_color(1.0, 0.0, 0.0)
             self.nib_trans = rendering.Transform()
             nib.add_attr(self.nib_trans)
             self.viewer.add_geom(nib)
             self._nib_geom = nib
-        
+
         if self.state is None: return None
         
         nib_posx, nib_posy = self.state[0:2]
@@ -90,4 +104,5 @@ class KameEnv(gym.Env):
         return self.viewer.render(return_rgb_array= mode=='rgb_array')
 
     def close(self):
-        pass
+        if self.viewer:
+            self.viewer.close()
