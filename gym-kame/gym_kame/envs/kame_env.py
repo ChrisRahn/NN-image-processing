@@ -67,21 +67,26 @@ class KameEnv(gym.Env):
         return self.state
     
     def render(self, mode='human'):
-        screen_width = 400
-        screen_height = 400
-        pix_width = screen_width/grid_width
-        pix_height = screen_height/grid_height
+        screen_width = 600
+        screen_height = 600
+        pix_width = screen_width/self.grid_width
+        pix_height = screen_height/self.grid_height
 
         if self.viewer is None:  # Build the viewer
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(screen_width, screen_height)
             nib = rendering.make_circle(radius=10, res=30, filled=True)
-            nib.set_color(1.0, 1.0, 1.0)
+            nib.set_color(1.0, 0.0, 0.0)
+            self.nib_trans = rendering.Transform()
+            nib.add_attr(self.nib_trans)
             self.viewer.add_geom(nib)
             self._nib_geom = nib
         
         if self.state is None: return None
         
+        nib_posx, nib_posy = self.state[0:2]
+        self.nib_trans.set_translation(pix_width*(nib_posx+0.5), pix_height*(nib_posy+0.5))
+
         return self.viewer.render(return_rgb_array= mode=='rgb_array')
 
     def close(self):
