@@ -10,7 +10,7 @@ class KameEnv(gym.Env):
     FPS = 10
 
     def __init__(self):
-        self.seed()
+        self.seed(42)
         self.viewer = None
         self.state = None
         self.tau = 0.3  # seconds b/w state updates
@@ -35,7 +35,7 @@ class KameEnv(gym.Env):
         self.state = tuple(chain(self.pos, self.grid.flatten()))
         # assert self.state_space.contains(self.state), "The observed state was %r, should be like %s" % (self.state, state_space.sample())
         
-    def seed(self, seed=42):
+    def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
@@ -66,6 +66,7 @@ class KameEnv(gym.Env):
     def reset(self):
         res_posx, res_posy = self.np_random.randint(2, size=2)
         res_grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
+        self.grid = res_grid
         self.state = tuple(chain([res_posx, res_posy], res_grid.flatten()))
         return self.state
     
