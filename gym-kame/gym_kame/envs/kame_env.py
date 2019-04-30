@@ -15,10 +15,10 @@ class KameEnv(gym.Env):
         self.state = None
         self.tau = 0.3  # seconds b/w state updates
         
-        self.grid_width = 3
-        self.grid_height = 3
+        self.grid_width = 50
+        self.grid_height = 50
         self.num_pix = self.grid_width*self.grid_height
-        self.pos = np.array([1, 1])
+        self.pos = np.array([int(self.grid_width/2), int(self.grid_height/2)])
         self.distance_tot = 0
         
         self.grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
@@ -51,7 +51,8 @@ class KameEnv(gym.Env):
             next_step = np.sign(delta)
             self.pos += next_step # step one pixel in the direction of the next point
             reward += self.grid[(self.pos[1], self.pos[0])]  # increase the reward if the pixel is black
-            self.grid[(self.pos[1], self.pos[0])] = 0  # blank the pixel
+            self.grid[(self.pos[1], self.pos[0])] = 0  # blank the pixel value
+            self.grid_render[self.pos[1], self.pos[0]].set_color(1, 1, 1)  # blank the pixel render
             delta -= next_step  # Decrement the delta
 
         done = False # TODO # stopping
@@ -67,6 +68,7 @@ class KameEnv(gym.Env):
         res_posx, res_posy = self.np_random.randint(2, size=2)
         res_grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
         self.grid = res_grid
+        self.pos = np.array([int(self.grid_width/2), int(self.grid_height/2)])
         self.state = tuple(chain([res_posx, res_posy], res_grid.flatten()))
         return self.state
     
@@ -94,7 +96,7 @@ class KameEnv(gym.Env):
                 self.grid_render[i, j] = pixel
 
             # Create nib render
-            nib = rendering.make_circle(radius=10, res=30, filled=True)
+            nib = rendering.make_circle(radius=5, res=30, filled=True)
             nib.set_color(1.0, 0.0, 0.0)
             self.nib_trans = rendering.Transform()
             nib.add_attr(self.nib_trans)
@@ -108,9 +110,9 @@ class KameEnv(gym.Env):
         self.nib_trans.set_translation(pix_width*(nib_posx+0.5), SCREEN_HEIGHT - pix_height*(nib_posy+0.5))
 
         # Update grid render
-        for i, j in product(range(self.grid_width), range(self.grid_height)):
-            v = self.grid[j, i]
-            self.grid_render[j, i].set_color(1-v, 1-v, 1-v)
+        # for i, j in product(range(self.grid_width), range(self.grid_height)):
+        #     v = self.grid[j, i]
+        #     self.grid_render[j, i].set_color(1-v, 1-v, 1-v)
 
         return self.viewer.render(return_rgb_array= mode=='rgb_array')
 
