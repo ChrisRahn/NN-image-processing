@@ -23,19 +23,17 @@ class KameEnv(gym.Env):
         
         self.grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
 
-        # Observation space is the grid of pixels
-        self.observation_space = spaces.Tuple((spaces.Discrete(2), spaces.Discrete(2), spaces.MultiBinary(n=self.num_pix)))
-        # Action space is tuple of two ints [right, up]
+        # Observation space is the position vector concat w/ grid of pixels
+        self.state_space = spaces.Tuple((spaces.Discrete(2), spaces.Discrete(2), spaces.MultiBinary(n=self.num_pix)))
+        # Action space is tuple of two ints [right, down] (coord vec from top left)
         # right: the x-coord of the nib's next position, 0..grid_width
-        # up: the y-coord of the nib's next position, 0..grid_height
+        # down: the y-coord of the nib's next position, 0..grid_height
         self.action_space = spaces.Tuple((spaces.Discrete(self.grid_width), spaces.Discrete(self.grid_height)))
 
-        self.prev_reward = None
+        self.prev_reward = 0.0
 
-        self.reset()
-
-        self.observation = tuple(chain(self.pos, self.grid.flatten()))
-        # assert self.observation_space.contains(self.observation), "The observation was %r, should be like %s" % (self.observation, observation_space.sample())
+        self.state = tuple(chain(self.pos, self.grid.flatten()))
+        # assert self.state_space.contains(self.state), "The observed state was %r, should be like %s" % (self.state, state_space.sample())
         
     def seed(self, seed=42):
         self.np_random, seed = seeding.np_random(seed)
@@ -44,7 +42,7 @@ class KameEnv(gym.Env):
     def step(self, next_pos):
         assert self.action_space.contains(next_pos), "%r (%s) invalid" % (next_pos, type(next_pos))
 
-        delta = np.array([(i-j) for i,j in zip(next_pos, self.pos)])
+        delta = np.array([(n-p) for n,p in zip(next_pos, self.pos)])
         self.distance_tot += np.sqrt((abs(delta)**2).sum())
 
         reward = 0.0
@@ -52,8 +50,8 @@ class KameEnv(gym.Env):
         while delta.any():
             next_step = np.sign(delta)
             self.pos += next_step # step one pixel in the direction of the next point
-            reward += self.grid[tuple(self.pos)]  # increase the reward if the pixel is black
-            self.grid[tuple(self.pos)] = 0  # blank the pixel
+            reward += self.grid[(self.pos[1], self.pos[0])]  # increase the reward if the pixel is black
+            self.grid[(self.pos[1], self.pos[0])] = 0  # blank the pixel
             delta -= next_step  # Decrement the delta
 
         done = False # TODO # stopping
@@ -61,9 +59,9 @@ class KameEnv(gym.Env):
 
         new_state = tuple(chain(self.pos, self.grid.flatten()))
         self.state = new_state
+        self.prev_reward += reward
 
         return new_state, reward, done, {}
-
     
     def reset(self):
         res_posx, res_posy = self.np_random.randint(2, size=2)
@@ -90,7 +88,7 @@ class KameEnv(gym.Env):
                 pixel.set_color(1-v, 1-v, 1-v)
                 pix_trans = rendering.Transform()
                 pixel.add_attr(pix_trans)
-                pix_trans.set_translation(pix_width*(j+0.5), pix_height*(i+0.5))
+                pix_trans.set_translation(pix_width*(j+0.5), SCREEN_HEIGHT - pix_height*(i+0.5))
                 self.viewer.add_geom(pixel)
                 self.grid_render[i, j] = pixel
 
@@ -106,12 +104,12 @@ class KameEnv(gym.Env):
         
         # Update nib render
         nib_posx, nib_posy = self.state[0:2]
-        self.nib_trans.set_translation(pix_width*(nib_posx+0.5), pix_height*(nib_posy+0.5))
+        self.nib_trans.set_translation(pix_width*(nib_posx+0.5), SCREEN_HEIGHT - pix_height*(nib_posy+0.5))
 
         # Update grid render
         for i, j in product(range(self.grid_width), range(self.grid_height)):
-            v = self.grid[i, j]
-            self.grid_render[i, j].set_color(1-v, 1-v, 1-v)
+            v = self.grid[j, i]
+            self.grid_render[j, i].set_color(1-v, 1-v, 1-v)
 
         return self.viewer.render(return_rgb_array= mode=='rgb_array')
 
