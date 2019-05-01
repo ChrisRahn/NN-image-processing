@@ -9,19 +9,26 @@ class KameEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     FPS = 10
 
-    def __init__(self):
+    def __init__(self, target=None):
         self.seed(42)
         self.viewer = None
         self.state = None
         self.tau = 0.3  # seconds b/w state updates
         
-        self.grid_width = 50
-        self.grid_height = 50
+        self.grid_width = 28
+        self.grid_height = 28
         self.num_pix = self.grid_width*self.grid_height
         self.pos = np.array([int(self.grid_width/2), int(self.grid_height/2)])
         self.distance_tot = 0
         
-        self.grid = self.np_random.randint(2, size=(self.grid_height, self.grid_width))
+        if target == None:
+            self.target = self.np_random.randint(2, size=(self.grid_width, self.grid_height))
+        else:
+            self.target = target
+        self.grid = np.ones_like(self.target, dtype=int) # Initialize w/ blank grid
+        # self.grid_render = None
+
+        self.max_reward = (self.target.sum())**2  # TODO
 
         # Observation space is the position vector concat w/ grid of pixels
         self.state_space = spaces.Tuple((spaces.Discrete(2), spaces.Discrete(2), spaces.MultiBinary(n=self.num_pix)))
@@ -45,17 +52,20 @@ class KameEnv(gym.Env):
         delta = np.array([(n-p) for n,p in zip(next_pos, self.pos)])
         self.distance_tot += np.sqrt((abs(delta)**2).sum())
 
-        reward = 0.0
+        prev_sse = (abs(self.target - self.grid).sum())
         
         while delta.any():
             next_step = np.sign(delta)
             self.pos += next_step # step one pixel in the direction of the next point
-            reward += self.grid[(self.pos[1], self.pos[0])]  # increase the reward if the pixel is black
-            self.grid[(self.pos[1], self.pos[0])] = 0  # blank the pixel value
-            self.grid_render[self.pos[1], self.pos[0]].set_color(1, 1, 1)  # blank the pixel render
+            self.grid[(self.pos[1], self.pos[0])] = 1  # set the pixel value to black
+            self.grid_render[self.pos[1], self.pos[0]].set_color(0, 0, 0)  # color the pixel render to black
             delta -= next_step  # Decrement the delta
 
-        done = False # TODO # stopping
+        curr_sse = (abs(self.target - self.grid).sum())**2
+
+        done = curr_sse==0 # TODO # stopping
+
+        reward = prev_sse - curr_sse # reward is the positive change in SSE (improvement)
         reward += -0.5  # reward penalty per step
 
         new_state = tuple(chain(self.pos, self.grid.flatten()))
